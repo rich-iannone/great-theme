@@ -117,3 +117,75 @@ def test_cli_import():
     from great_theme.cli import main
 
     assert callable(main)
+
+
+def test_method_section_generation():
+    """Test that classes with >5 methods get separate method sections."""
+    import sys
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # Create a test package with a class that has many methods
+        package_dir = Path(tmp_dir) / "testpkg"
+        package_dir.mkdir()
+
+        # Create __init__.py with __all__ and a class with many methods
+        init_content = '''
+"""Test package."""
+__version__ = "1.0.0"
+__all__ = ["BigClass", "SmallClass", "some_function"]
+
+class BigClass:
+    """A class with many methods."""
+    def method1(self): pass
+    def method2(self): pass
+    def method3(self): pass
+    def method4(self): pass
+    def method5(self): pass
+    def method6(self): pass
+    def method7(self): pass
+
+class SmallClass:
+    """A class with few methods."""
+    def method1(self): pass
+    def method2(self): pass
+
+def some_function():
+    """A function."""
+    pass
+'''
+        (package_dir / "__init__.py").write_text(init_content)
+
+        # Add temp dir to sys.path so griffe can find the package
+        sys.path.insert(0, tmp_dir)
+        try:
+            theme = GreatTheme(project_path=tmp_dir, docs_dir=".")
+            sections = theme._create_quartodoc_sections("testpkg")
+
+            assert sections is not None
+
+            # Check that we have a Classes section
+            class_section = next((s for s in sections if s["title"] == "Classes"), None)
+            assert class_section is not None
+            assert "BigClass" in class_section["contents"]
+            assert "SmallClass" in class_section["contents"]
+
+            # Check that we have a separate method section for BigClass
+            method_section = next((s for s in sections if s["title"] == "BigClass Methods"), None)
+            assert method_section is not None
+            assert len(method_section["contents"]) == 7
+            assert "BigClass.method1" in method_section["contents"]
+            assert "BigClass.method7" in method_section["contents"]
+
+            # SmallClass should NOT have a separate method section
+            small_method_section = next(
+                (s for s in sections if s["title"] == "SmallClass Methods"), None
+            )
+            assert small_method_section is None
+
+            # Check that functions section exists
+            func_section = next((s for s in sections if s["title"] == "Functions"), None)
+            assert func_section is not None
+            assert "some_function" in func_section["contents"]
+        finally:
+            # Clean up sys.path
+            sys.path.remove(tmp_dir)

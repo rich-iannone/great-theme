@@ -15,8 +15,45 @@ This is comprehensive theming package that provides enhanced styling and functio
 
 ### Installation
 
+#### From PyPI (when published)
+
 ```bash
 pip install great-theme
+```
+
+#### From GitHub
+
+Install the latest version directly from the GitHub repository:
+
+```bash
+pip install git+https://github.com/rich-iannone/great-theme.git
+```
+
+Or install a specific branch, tag, or commit:
+
+```bash
+# Install from a specific branch
+pip install git+https://github.com/rich-iannone/great-theme.git@main
+
+# Install from a specific tag
+pip install git+https://github.com/rich-iannone/great-theme.git@v0.1.0
+
+# Install from a specific commit
+pip install git+https://github.com/rich-iannone/great-theme.git@abc1234
+```
+
+For development or editable installation:
+
+```bash
+# Clone the repository
+git clone https://github.com/rich-iannone/great-theme.git
+cd great-theme
+
+# Install in editable mode
+pip install -e .
+
+# Or install with development dependencies
+pip install -e ".[dev]"
 ```
 
 ### Apply to Your Project

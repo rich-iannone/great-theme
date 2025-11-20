@@ -264,6 +264,56 @@ class GreatTheme:
 
         return None
 
+    def _find_package_init(self, package_name: str) -> Optional[Path]:
+        """
+        Find the __init__.py file for a package, searching common locations.
+
+        This handles packages with non-standard structures like Rust bindings
+        that may have their Python code in subdirectories like python/, src/, etc.
+
+        Parameters
+        ----------
+        package_name
+            The name of the package to find.
+
+        Returns
+        -------
+        Optional[Path]
+            Path to the __init__.py file, or None if not found.
+        """
+        # Normalize package name (replace dashes with underscores)
+        normalized_name = package_name.replace("-", "_")
+
+        # Common locations to search for package directories
+        search_paths = [
+            self.project_root / package_name,
+            self.project_root / normalized_name,
+            self.project_root / "python" / package_name,
+            self.project_root / "python" / normalized_name,
+            self.project_root / "src" / package_name,
+            self.project_root / "src" / normalized_name,
+            self.project_root / "lib" / package_name,
+            self.project_root / "lib" / normalized_name,
+        ]
+
+        for package_dir in search_paths:
+            if not package_dir.exists() or not package_dir.is_dir():
+                continue
+
+            init_file = package_dir / "__init__.py"
+            if init_file.exists():
+                # Verify this is likely the right __init__.py by checking for __version__
+                try:
+                    with open(init_file, "r", encoding="utf-8") as f:
+                        content = f.read()
+                        # Check if it has __version__ (good indicator of main package __init__)
+                        if "__version__" in content or "__all__" in content:
+                            return init_file
+                except Exception:
+                    continue
+
+        return None
+
     def _parse_package_exports(self, package_name: str) -> Optional[list]:
         """
         Parse __all__ from package's __init__.py to get public API.
@@ -278,17 +328,13 @@ class GreatTheme:
         Optional[list]
             List of public names from __all__, or None if not found.
         """
-        # Look for package directory
-        package_dir = self.project_root / package_name
-        if not package_dir.exists() or not package_dir.is_dir():
-            # Try with underscores if package name has dashes
-            package_dir = self.project_root / package_name.replace("-", "_")
-            if not package_dir.exists() or not package_dir.is_dir():
-                return None
-
-        init_file = package_dir / "__init__.py"
-        if not init_file.exists():
+        # Find the package's __init__.py file
+        init_file = self._find_package_init(package_name)
+        if not init_file:
+            print(f"Could not locate __init__.py for package '{package_name}'")
             return None
+
+        print(f"Found package __init__.py at: {init_file.relative_to(self.project_root)}")
 
         try:
             with open(init_file, "r", encoding="utf-8") as f:
@@ -309,9 +355,14 @@ class GreatTheme:
                                 for elt in node.value.elts:
                                     if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
                                         result.append(elt.value)
-                                return result
+                                if result:
+                                    print(f"Successfully parsed __all__ with {len(result)} exports")
+                                    return result
+
+            print("No __all__ definition found in __init__.py")
             return None
-        except Exception:
+        except Exception as e:
+            print(f"Error parsing __all__: {type(e).__name__}: {e}")
             return None
 
     def _categorize_api_objects(self, package_name: str, exports: list) -> dict:
@@ -339,24 +390,36 @@ class GreatTheme:
             pkg = importlib.import_module(package_name.replace("-", "_"))
 
             categories = {"classes": [], "functions": [], "other": []}
+            failed_introspection = []
 
             for name in exports:
                 try:
                     obj = getattr(pkg, name, None)
                     if obj is None:
                         categories["other"].append(name)
+                        failed_introspection.append(name)
                     elif inspect.isclass(obj):
                         categories["classes"].append(name)
                     elif inspect.isfunction(obj) or inspect.isbuiltin(obj):
                         categories["functions"].append(name)
                     else:
                         categories["other"].append(name)
-                except Exception:
+                except Exception as e:
+                    # If introspection fails for a specific object, still include it
                     categories["other"].append(name)
+                    failed_introspection.append(name)
+
+            if failed_introspection:
+                print(
+                    f"Note: Could not introspect {len(failed_introspection)} item(s), categorizing as 'Other'"
+                )
 
             return categories
-        except Exception:
-            # If introspection fails, return all as "other"
+        except Exception as e:
+            # If introspection fails completely, return all as "other"
+            print(
+                f"Warning: Package introspection failed ({type(e).__name__}), categorizing all as 'Other'"
+            )
             return {"classes": [], "functions": [], "other": exports}
 
     def _create_quartodoc_sections(self, package_name: str) -> Optional[list]:

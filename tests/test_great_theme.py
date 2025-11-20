@@ -82,6 +82,36 @@ def test_detect_package_name_from_pyproject():
     assert package_name == "great-theme"
 
 
+def test_find_package_init():
+    """Test finding __init__.py in standard location."""
+    theme = GreatTheme(docs_dir=".")
+    init_file = theme._find_package_init("great_theme")
+
+    assert init_file is not None
+    assert init_file.exists()
+    assert init_file.name == "__init__.py"
+
+
+def test_find_package_init_with_nested_structure():
+    """Test finding __init__.py in nested directories like python/."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # Create a package structure in python/ subdirectory
+        python_dir = Path(tmp_dir) / "python"
+        python_dir.mkdir()
+        package_dir = python_dir / "mypackage"
+        package_dir.mkdir()
+
+        # Create __init__.py with __version__ and __all__
+        init_file = package_dir / "__init__.py"
+        init_file.write_text('__version__ = "1.0.0"\n__all__ = ["MyClass"]')
+
+        theme = GreatTheme(project_path=tmp_dir, docs_dir=".")
+        found_init = theme._find_package_init("mypackage")
+
+        assert found_init is not None
+        assert found_init == init_file
+
+
 def test_cli_import():
     """Test that CLI module can be imported."""
     from great_theme.cli import main

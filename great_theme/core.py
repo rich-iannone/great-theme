@@ -323,6 +323,8 @@ class GreatTheme:
         """
         Parse __all__ from package's __init__.py to get public API.
 
+        Also checks for __gt_exclude__ to filter out non-documentable items.
+
         Parameters
         ----------
         package_name
@@ -331,7 +333,7 @@ class GreatTheme:
         Returns
         -------
         Optional[list]
-            List of public names from __all__, or None if not found.
+            List of public names from __all__ (filtered by __gt_exclude__), or None if not found.
         """
         # Find the package's __init__.py file
         init_file = self._find_package_init(package_name)
@@ -345,24 +347,46 @@ class GreatTheme:
             with open(init_file, "r", encoding="utf-8") as f:
                 content = f.read()
 
-            # Try to extract __all__ using AST (safer than eval)
+            # Try to extract __all__ and __gt_exclude__ using AST (safer than eval)
             import ast
 
             tree = ast.parse(content)
 
+            all_exports = None
+            gt_exclude = []
+
             for node in ast.walk(tree):
                 if isinstance(node, ast.Assign):
                     for target in node.targets:
+                        # Extract __all__
                         if isinstance(target, ast.Name) and target.id == "__all__":
-                            # Found __all__ assignment
                             if isinstance(node.value, ast.List):
-                                result = []
+                                all_exports = []
                                 for elt in node.value.elts:
                                     if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
-                                        result.append(elt.value)
-                                if result:
-                                    print(f"Successfully parsed __all__ with {len(result)} exports")
-                                    return result
+                                        all_exports.append(elt.value)
+
+                        # Extract __gt_exclude__
+                        if isinstance(target, ast.Name) and target.id == "__gt_exclude__":
+                            if isinstance(node.value, ast.List):
+                                for elt in node.value.elts:
+                                    if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
+                                        gt_exclude.append(elt.value)
+
+            if all_exports:
+                print(f"Successfully parsed __all__ with {len(all_exports)} exports")
+
+                # Filter out excluded items
+                if gt_exclude:
+                    filtered = [e for e in all_exports if e not in gt_exclude]
+                    excluded_count = len(all_exports) - len(filtered)
+                    if excluded_count > 0:
+                        print(
+                            f"Filtered out {excluded_count} item(s) from __gt_exclude__: {', '.join(gt_exclude)}"
+                        )
+                    return filtered
+                else:
+                    return all_exports
 
             print("No __all__ definition found in __init__.py")
             return None
@@ -533,8 +557,8 @@ class GreatTheme:
                 method_count = categories["class_methods"].get(class_name, 0)
 
                 if method_count > 5:
-                    # Class with many methods: will create separate method section
-                    class_contents.append(class_name)
+                    # Class with many methods: add with members: [] to suppress inline docs
+                    class_contents.append({"name": class_name, "members": []})
                     classes_with_separate_methods.append(class_name)
                 else:
                     # Class with few methods: document inline

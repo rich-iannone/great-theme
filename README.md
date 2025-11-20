@@ -6,12 +6,13 @@ This is comprehensive theming package that provides enhanced styling and functio
 
 - **enhanced typography**: monospace fonts for code elements and improved readability
 - **smart classification**: automatic function/method/class labeling with color-coded badges
-- **smart method splitting**: classes with >5 methods get separate pages for better navigation
+- **smart method splitting**: classes with >5 methods get separate pages for better navigation (uses griffe introspection)
 - **modern styling**: clean, professional appearance with gradient effects
 - **mobile responsive**: optimized for all device sizes
 - **streamlined workflow**: single `great-theme build` command handles everything
 - **easy installation**: simple CLI tool for quick setup
-- **intelligent setup**: auto-generates quartodoc configuration from your package's `__all__`
+- **intelligent setup**: auto-generates quartodoc configuration from your package's `__all__` using griffe
+- **safe introspection**: works with packages containing non-Python components (e.g., Rust bindings)
 - **zero configuration**: works out of the box with sensible defaults
 
 ## Quick Start
@@ -245,10 +246,16 @@ If `__all__` is not found, great-theme will create a basic configuration and you
 
 ### Smart Method Splitting
 
-Great-theme automatically applies smart heuristics for documenting classes:
+Great-theme uses **griffe** (quartodoc's introspection library) to analyze your package without importing it. This enables:
+
+- **Safe introspection**: Works with packages containing non-Python components (Rust/C bindings, etc.)
+- **Accurate method counting**: Counts actual public methods on each class
+- **Smart categorization**: Automatically identifies classes, functions, and other objects
+
+Based on method count:
 
 - **Classes with ≤5 methods**: Methods are documented inline on the class page
-- **Classes with >5 methods**: Methods get separate pages (like `Graph.add_node`, `Graph.add_edge`)
+- **Classes with >5 methods**: Methods automatically get separate pages (like `Graph.add_node`, `Graph.add_edge`)
 
 This prevents overwhelming single-page documentation and improves navigation for large classes.
 
@@ -266,17 +273,7 @@ This single command runs both `quartodoc build` and `quarto render` for you.
 
 If you prefer to run commands separately or customize the workflow:
 
-1. **(Optional) Edit the quartodoc sections** in `_quarto.yml` to organize your API:
-
-   ```yaml
-   quartodoc:
-     sections:
-       - title: Core Classes
-         desc: Main classes for your package
-         contents:
-           - name: Graph
-             members: [] # Empty list = separate pages for methods
-   ```
+1. **(Optional) Edit the quartodoc sections** in `_quarto.yml` to organize your API documentation as needed.
 
 2. **Generate API reference pages**:
 

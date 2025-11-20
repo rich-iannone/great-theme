@@ -9,7 +9,7 @@ try:
     from importlib import resources
 except ImportError:
     # Fallback for Python < 3.9
-    import importlib_resources as resources
+    import importlib_resources as resources  # type: ignore[import-not-found]
 
 
 class GreatTheme:
@@ -34,7 +34,7 @@ class GreatTheme:
             self.package_path = Path(resources.files("great_theme"))
         except AttributeError:
             # Fallback for older Python versions
-            import importlib_resources
+            import importlib_resources  # type: ignore[import-not-found]
 
             self.package_path = Path(importlib_resources.files("great_theme"))
         self.assets_path = self.package_path / "assets"

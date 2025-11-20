@@ -58,11 +58,18 @@ pip install -e ".[dev]"
 
 ### Apply to Your Project
 
-Navigate to your quartodoc project directory and run:
+Navigate to your project root directory and run:
 
 ```bash
 great-theme install
 ```
+
+The installer will:
+
+1. Automatically detect existing documentation directories (`docs/`, `site/`, etc.)
+2. Look for existing `_quarto.yml` files to determine the correct location
+3. Prompt you to choose a location if no docs directory is found
+4. Install all necessary files to the detected or chosen directory
 
 That's it! The theme will automatically enhance your documentation site.
 
@@ -100,17 +107,26 @@ Great Theme automatically improves your quartodoc site through:
 ### CLI Commands
 
 ```bash
-# Install theme to current directory
+# Install theme (auto-detects docs directory)
 great-theme install
 
-# Install to specific directory
+# Install to specific docs directory
+great-theme install --docs-dir docs
+
+# Install to specific project
 great-theme install --project-path /path/to/project
+
+# Install with specific docs directory in a project
+great-theme install --project-path /path/to/project --docs-dir documentation
 
 # Force overwrite existing files
 great-theme install --force
 
 # Remove theme from project
 great-theme uninstall
+
+# Uninstall from specific docs directory
+great-theme uninstall --docs-dir docs
 ```
 
 ### Python API
@@ -118,14 +134,18 @@ great-theme uninstall
 ```python
 from great_theme import GreatTheme
 
-# Initialize for current directory
+# Initialize for current directory (auto-detects docs dir)
 theme = GreatTheme()
 
 # Install theme files and configuration
 theme.install()
 
-# Install to specific directory
+# Initialize with specific project root
 theme = GreatTheme(project_path="/path/to/project")
+theme.install()
+
+# Initialize with specific docs directory
+theme = GreatTheme(project_path="/path/to/project", docs_dir="docs")
 theme.install()
 
 # Remove theme
@@ -134,15 +154,18 @@ theme.uninstall()
 
 ## What Gets Installed
 
-When you run `great-theme install`, the following files are added to your project:
+When you run `great-theme install`, the following files are added to your documentation directory:
 
 ```
 your-project/
-├── _quarto.yml          # Updated with theme configuration
-├── great-theme.css      # Main theme stylesheet
-└── scripts/
-    └── post-render.py   # HTML post-processing script
+├── docs/                # Or your chosen docs directory
+│   ├── _quarto.yml      # Updated with theme configuration
+│   ├── great-theme.css  # Main theme stylesheet
+│   └── scripts/
+│       └── post-render.py   # HTML post-processing script
 ```
+
+If you have an existing `_quarto.yml` or documentation directory, great-theme will detect and use it.
 
 ## Configuration
 

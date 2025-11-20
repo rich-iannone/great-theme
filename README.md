@@ -235,18 +235,32 @@ The installer intelligently configures your project:
 - Your package must have `__all__` defined in `__init__.py`
 - Names in `__all__` should be importable from the package
 
-Great-theme will search for your package in standard locations including:
+**Filtering non-documentable items**:
+
+If your package includes items that can't be documented by quartodoc (e.g., Rust types, C bindings), you can exclude them using `__gt_exclude__`:
+
+```python
+# In your package's __init__.py
+__all__ = ["Graph", "Node", "Edge", "some_function"]
+
+# Exclude items that quartodoc can't document
+__gt_exclude__ = ["Node", "Edge"]  # Rust types
+```
+
+Great Theme will automatically filter out items in `__gt_exclude__` when generating the quartodoc configuration.
+
+Great Theme will search for your package in standard locations including:
 
 - Project root (e.g., `your-package/`)
 - `python/` directory (common for Rust/Python hybrid packages)
 - `src/` directory
 - `lib/` directory
 
-If `__all__` is not found, great-theme will create a basic configuration and you can manually add sections.
+If `__all__` is not found, Great Theme will create a basic configuration and you can manually add sections.
 
 ### Smart Method Splitting
 
-Great-theme uses **griffe** (quartodoc's introspection library) to analyze your package without importing it. This enables:
+Great Theme uses **griffe** to analyze your package without importing it. This enables:
 
 - **Safe introspection**: Works with packages containing non-Python components (Rust/C bindings, etc.)
 - **Accurate method counting**: Counts actual public methods on each class
@@ -256,13 +270,35 @@ Great-theme uses **griffe** (quartodoc's introspection library) to analyze your 
 Based on method count:
 
 - **Classes with ≤5 methods**: Methods are documented inline on the class page
-- **Classes with >5 methods**: Creates a separate section with all methods explicitly listed (e.g., `Graph.add_node`, `Graph.add_edge`, etc.)
+- **Classes with >5 methods**:
+  - Class page is created with `members: []` to suppress inline method documentation
+  - Creates a separate section with all methods explicitly listed
+  - Each method gets its own documentation page
 
-For example, if your `Graph` class has 191 methods, great-theme will:
+For example, if your `Graph` class has 191 methods, Great Theme will:
 
-1. Add `Graph` to the Classes section
-2. Create a new "Graph Methods" section listing all 191 methods: `Graph.add_node`, `Graph.add_edge`, `Graph.remove_node`, etc.
+1. Add `Graph` to the Classes section with `members: []` (suppresses inline method docs)
+2. Create a new "Graph Methods" section listing all 191 methods: `Graph.add_node`, `Graph.add_edge`, etc.
 3. Each method gets its own documentation page for better navigation
+
+Generated configuration:
+
+```yaml
+quartodoc:
+  sections:
+    - title: Classes
+      desc: Core classes and types
+      contents:
+        - name: Graph
+          members: [] # Suppresses inline method documentation
+
+    - title: Graph Methods
+      desc: Methods for the Graph class
+      contents:
+        - Graph.add_node
+        - Graph.add_edge
+        # ... all 191 methods
+```
 
 This prevents overwhelming single-page documentation and improves navigation for large classes.
 
@@ -315,7 +351,7 @@ Your documentation is now live with great-theme styling!
 pip install quartodoc
 ```
 
-Your documentation is now live with great-theme styling!
+Your documentation is now live with Great Theme styling!
 
 ## Configuration
 

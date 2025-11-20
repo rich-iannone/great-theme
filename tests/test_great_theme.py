@@ -166,7 +166,20 @@ def some_function():
             # Check that we have a Classes section
             class_section = next((s for s in sections if s["title"] == "Classes"), None)
             assert class_section is not None
-            assert "BigClass" in class_section["contents"]
+
+            # BigClass should have members: [] since it has >5 methods
+            big_class_entry = next(
+                (
+                    c
+                    for c in class_section["contents"]
+                    if isinstance(c, dict) and c.get("name") == "BigClass"
+                ),
+                None,
+            )
+            assert big_class_entry is not None
+            assert big_class_entry == {"name": "BigClass", "members": []}
+
+            # SmallClass should be a plain string (inline documentation)
             assert "SmallClass" in class_section["contents"]
 
             # Check that we have a separate method section for BigClass
@@ -189,3 +202,52 @@ def some_function():
         finally:
             # Clean up sys.path
             sys.path.remove(tmp_dir)
+
+
+def test_gt_exclude():
+    """Test that __gt_exclude__ filters out non-documentable items."""
+    import sys
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        # Create a test package with __gt_exclude__
+        package_dir = Path(tmp_dir) / "testpkg_exclude"
+        package_dir.mkdir()
+
+        # Create __init__.py with __all__ and __gt_exclude__
+        init_content = '''
+"""Test package with exclusions."""
+__version__ = "1.0.0"
+__all__ = ["Graph", "Node", "Edge", "some_function"]
+
+# Exclude Rust types that can't be documented
+__gt_exclude__ = ["Node", "Edge"]
+
+class Graph:
+    """A graph class."""
+    def add_node(self): pass
+    def add_edge(self): pass
+
+class Node:
+    """A Rust type (would fail in quartodoc)."""
+    pass
+
+class Edge:
+    """Another Rust type (would fail in quartodoc)."""
+    pass
+
+def some_function():
+    """A function."""
+    pass
+'''
+        (package_dir / "__init__.py").write_text(init_content)
+
+        theme = GreatTheme(project_path=tmp_dir, docs_dir=".")
+        exports = theme._parse_package_exports("testpkg_exclude")
+
+        # Should have filtered out Node and Edge
+        assert exports is not None
+        assert "Graph" in exports
+        assert "some_function" in exports
+        assert "Node" not in exports
+        assert "Edge" not in exports
+        assert len(exports) == 2

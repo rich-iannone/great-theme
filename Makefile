@@ -117,7 +117,7 @@ test-install: build ## Test installation in a clean environment
 test-cli: ## Test the CLI in a temp directory
 	@echo "Testing CLI installation..."
 	@mkdir -p /tmp/test_great_theme
-	@cd /tmp/test_great_theme && great-theme install --force
+	@cd /tmp/test_great_theme && great-theme init --force
 	@echo "CLI test passed"
 	@rm -rf /tmp/test_great_theme
 

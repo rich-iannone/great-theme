@@ -65,7 +65,7 @@ pip install -e ".[dev]"
 Navigate to your project root directory and run:
 
 ```bash
-great-theme install
+great-theme init
 ```
 
 The installer will:
@@ -109,20 +109,20 @@ Great Theme automatically initializes a quartodoc site and includes:
 ### CLI Commands
 
 ```bash
-# Install theme (auto-detects docs directory)
-great-theme install
+# Initialize theme (auto-detects docs directory)
+great-theme init
 
-# Install to specific docs directory
-great-theme install --docs-dir docs
+# Initialize to specific docs directory
+great-theme init --docs-dir docs
 
-# Install to specific project
-great-theme install --project-path /path/to/project
+# Initialize to specific project
+great-theme init --project-path /path/to/project
 
-# Install with specific docs directory in a project
-great-theme install --project-path /path/to/project --docs-dir documentation
+# Initialize with specific docs directory in a project
+great-theme init --project-path /path/to/project --docs-dir documentation
 
 # Force overwrite existing files
-great-theme install --force
+great-theme init --force
 
 # Build documentation (runs quartodoc build + quarto render)
 great-theme build
@@ -174,7 +174,7 @@ theme.uninstall()
 
 ## What Gets Installed
 
-When you run `great-theme install`, the following files are added to your documentation directory:
+When you run `great-theme init`, the following files are added to your documentation directory:
 
 ```
 your-project/

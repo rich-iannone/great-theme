@@ -7,12 +7,12 @@ This is comprehensive theming package that provides enhanced styling and functio
 - **enhanced typography**: monospace fonts for code elements and improved readability
 - **smart classification**: automatic function/method/class labeling with color-coded badges
 - **smart method splitting**: classes with >5 methods get separate pages for better navigation (uses griffe introspection)
-- **modern styling**: clean, professional appearance with gradient effects
+- **modern styling**: clean, professional appearance
 - **mobile responsive**: optimized for all device sizes
 - **streamlined workflow**: single `great-theme build` command handles everything
 - **easy installation**: simple CLI tool for quick setup
-- **intelligent setup**: auto-generates quartodoc configuration from your package's `__all__` using griffe
-- **safe introspection**: works with packages containing non-Python components (e.g., Rust bindings)
+- **intelligent setup**: auto-generates quartodoc configuration from your package's `__all__`
+- **safe introspection**: works with packages containing non-Python components
 - **zero configuration**: works out of the box with sensible defaults
 
 ## Quick Start
@@ -79,13 +79,13 @@ The installer will:
 7. **Auto-generate API sections** by parsing `__all__` from your package's `__init__.py`
 8. **Add website navigation** with Home and API Reference links in the navbar
 
-That's it! The theme will automatically enhance your documentation site.
+This up-and-running site sets you up for success with your documentation dreams.
 
 ## What Gets Enhanced
 
-Great Theme automatically improves your quartodoc site through:
+Great Theme automatically initializes a quartodoc site and includes:
 
-### Visual Enhancements
+### Nice Visuals
 
 - **function signatures** styled with monospace fonts
 - **type annotations** with improved formatting
@@ -103,12 +103,6 @@ Great Theme automatically improves your quartodoc site through:
 - mobile-friendly navigation
 - optimized sidebar behavior
 - touch-friendly interface elements
-
-### Interactive Elements
-
-- animated gradient headers for Examples sections
-- hover effects on navigation elements
-- smooth transitions and animations
 
 ## Usage
 
@@ -262,7 +256,7 @@ If `__all__` is not found, Great Theme will create a basic configuration and you
 
 Great Theme uses **griffe** to analyze your package without importing it. This enables:
 
-- **Safe introspection**: Works with packages containing non-Python components (Rust/C bindings, etc.)
+- **Safe introspection**: Works with packages containing non-Python components
 - **Accurate method counting**: Counts actual public methods on each class
 - **Smart categorization**: Automatically identifies classes, functions, and other objects
 - **Automatic method enumeration**: Explicitly lists all methods for quartodoc to document

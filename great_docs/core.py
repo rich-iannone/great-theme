@@ -185,6 +185,27 @@ class GreatDocs:
             shutil.copy2(css_src, css_dst)
             print(f"Copied {css_dst}")
 
+        # Copy .gitignore file
+        gitignore_src = self.assets_path / ".gitignore"
+        gitignore_dst = self.project_path / ".gitignore"
+
+        if gitignore_dst.exists() and not force:
+            # Append to existing .gitignore if it doesn't already contain our entries
+            with open(gitignore_dst, "r") as f:
+                existing_content = f.read()
+            
+            if "_site/" not in existing_content:
+                with open(gitignore_src, "r") as f:
+                    new_content = f.read()
+                with open(gitignore_dst, "a") as f:
+                    f.write("\n" + new_content)
+                print(f"Appended to {gitignore_dst}")
+            else:
+                print("Skipping .gitignore (already contains _site/ entry)")
+        else:
+            shutil.copy2(gitignore_src, gitignore_dst)
+            print(f"Copied {gitignore_dst}")
+
         # Update _quarto.yml configuration
         self._update_quarto_config()
 
@@ -839,12 +860,24 @@ title: ""
         files_to_remove = [
             self.project_path / "scripts" / "post-render.py",
             self.project_path / "great-docs.css",
+            self.project_path / ".gitignore",
         ]
 
         for file_path in files_to_remove:
             if file_path.exists():
-                file_path.unlink()
-                print(f"Removed {file_path}")
+                # For .gitignore, only remove if it matches our template exactly
+                if file_path.name == ".gitignore":
+                    with open(file_path, "r") as f:
+                        content = f.read()
+                    # Only remove if it's purely our .gitignore (starts with our comment)
+                    if content.strip().startswith("# Quarto build output"):
+                        file_path.unlink()
+                        print(f"Removed {file_path}")
+                    else:
+                        print(f"Skipping {file_path} (contains user modifications)")
+                else:
+                    file_path.unlink()
+                    print(f"Removed {file_path}")
 
         # Clean up _quarto.yml
         self._clean_quarto_config()

@@ -786,8 +786,109 @@ title: "License"
             print(f"Created {license_qmd}")
             license_link = "license.qmd"
 
-        # Get package metadata for sidebar
-        metadata = self._get_package_metadata()
+        # Create citation.qmd if CITATION.cff exists
+        citation_path = package_root / "CITATION.cff"
+        citation_link = None
+        if citation_path.exists():
+            citation_qmd = self.project_path / "citation.qmd"
+
+            # Get metadata first to access rich_authors
+            metadata = self._get_package_metadata()
+
+            # Parse CITATION.cff for structured data
+            import yaml
+
+            with open(citation_path, "r", encoding="utf-8") as f:
+                citation_data = yaml.safe_load(f)
+
+            # Build Authors section
+            authors_section = "## Authors\n\n"
+            if citation_data.get("authors"):
+                for author in citation_data["authors"]:
+                    given = author.get("given-names", "")
+                    family = author.get("family-names", "")
+                    full_name = f"{given} {family}".strip()
+
+                    # Get role from rich_authors if available
+                    role = "Author"
+                    if metadata.get("rich_authors"):
+                        for rich_author in metadata["rich_authors"]:
+                            if rich_author.get("name") == full_name:
+                                role = rich_author.get("role", "Author")
+                                break
+
+                    authors_section += f"{full_name}. {role}.  \n"
+
+            # Build Citation section with text and BibTeX
+            citation_section = "## Citation\n\n"
+            citation_section += "**Source:** `CITATION.cff`\n\n"
+
+            # Generate text citation
+            if citation_data.get("authors"):
+                author_names = []
+                for author in citation_data["authors"]:
+                    family = author.get("family-names", "")
+                    given = author.get("given-names", "")
+                    initial = given[0] if given else ""
+                    author_names.append(f"{family} {initial}" if initial else family)
+
+                authors_str = ", ".join(author_names)
+                title = citation_data.get("title", "")
+                version = citation_data.get("version", "")
+                url = citation_data.get("url", "")
+                year = "2025"  # Could parse from date-released if available
+
+                citation_section += (
+                    f"{authors_str} ({year}). {title} Python package version {version}, {url}.\n\n"
+                )
+
+            # Generate BibTeX
+            citation_section += "```bibtex\n"
+            citation_section += "@Manual{,\n"
+
+            if citation_data.get("title"):
+                citation_section += f"  title = {{{citation_data['title']}}},\n"
+
+            if citation_data.get("authors"):
+                author_names = []
+                for author in citation_data["authors"]:
+                    given = author.get("given-names", "")
+                    family = author.get("family-names", "")
+                    full_name = f"{given} {family}".strip()
+                    author_names.append(full_name)
+                citation_section += f"  author = {{{' and '.join(author_names)}}},\n"
+
+            citation_section += "  year = {2025},\n"
+
+            if citation_data.get("version"):
+                citation_section += (
+                    f"  note = {{Python package version {citation_data['version']}}},\n"
+                )
+
+            if citation_data.get("url"):
+                citation_section += f"  url = {{{citation_data['url']}}},\n"
+
+            citation_section += "}\n```\n"
+
+            citation_qmd_content = f"""---
+title: "Authors and Citation"
+---
+
+{authors_section}
+
+{citation_section}
+"""
+            with open(citation_qmd, "w", encoding="utf-8") as f:
+                f.write(citation_qmd_content)
+            print(f"Created {citation_qmd}")
+            citation_link = "citation.qmd"
+        else:
+            # Get package metadata for sidebar
+            metadata = self._get_package_metadata()
+
+        # If we didn't get metadata yet (no citation file), get it now
+        if not citation_path.exists():
+            metadata = self._get_package_metadata()
 
         # Build margin content sections (right sidebar)
         margin_sections = []
@@ -966,17 +1067,24 @@ title: "Code of Conduct"
         # Meta section (Python version and extras)
         meta_items = []
         if metadata.get("requires_python"):
-            meta_items.append(f"**Requires:** Python {metadata['requires_python']}")
+            meta_items.append(f"**Requires:** Python `{metadata['requires_python']}`")
 
         if metadata.get("optional_dependencies"):
             extras = list(metadata["optional_dependencies"].keys())
             if extras:
-                extras_str = ", ".join(extras)
-                meta_items.append(f"**Provides-Extra:** {extras_str}")
+                # Wrap each extra in backticks for monospace
+                extras_formatted = ", ".join(f"`{extra}`" for extra in extras)
+                meta_items.append(f"**Provides-Extra:** {extras_formatted}")
 
         if meta_items:
             margin_sections.append("\n## Meta\n")
             margin_sections.append("  \n".join(meta_items))
+
+        # Citation section (if CITATION.cff exists)
+        citation_file = package_root / "CITATION.cff"
+        if citation_file.exists():
+            margin_sections.append("\n## Citation\n")
+            margin_sections.append("[Citing great-docs](citation.qmd)")
 
         # Build margin content
         margin_content = "\n".join(margin_sections) if margin_sections else ""

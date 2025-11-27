@@ -135,3 +135,25 @@ line-ending = "auto"
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "E402"]
 "tests/*" = ["F401", "E402"]
+
+# Great Docs configuration
+[tool.great-docs]
+# Exclude items from auto-documentation
+# exclude = ["item_1", "item_2"]
+
+# Rich author metadata (optional); this augments the standard project.authors
+# All fields except 'name' are optional
+[[tool.great-docs.authors]]
+name = "Rich Iannone"
+email = "riannone@me.com"
+role = "Maintainer"
+affiliation = "Posit, PBC"
+github = "rich-iannone"
+orcid = "0000-0003-3925-190X"
+
+# Add more authors by repeating the [[tool.great-docs.authors]] section
+[[tool.great-docs.authors]]
+name = "Tomasz Kalinowski"
+email = "tomasz@posit.co"
+role = "Contributor"
+github = "t-kalinowski"

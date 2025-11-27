@@ -376,6 +376,12 @@ class GreatDocs:
                 metadata["requires_python"] = project.get("requires-python", "")
                 metadata["keywords"] = project.get("keywords", [])
                 metadata["description"] = project.get("description", "")
+                metadata["optional_dependencies"] = project.get("optional-dependencies", {})
+
+                # Extract rich author metadata and exclude list from tool.great-docs if available
+                tool_config = data.get("tool", {}).get("great-docs", {})
+                metadata["rich_authors"] = tool_config.get("authors", [])
+                metadata["exclude"] = tool_config.get("exclude", [])
 
         except Exception:
             pass
@@ -436,7 +442,8 @@ class GreatDocs:
         """
         Parse __all__ from package's __init__.py to get public API.
 
-        Also checks for __gt_exclude__ to filter out non-documentable items.
+        Also checks for __gt_exclude__ in __init__.py or exclude in [tool.great-docs]
+        to filter out non-documentable items.
 
         Parameters
         ----------
@@ -446,7 +453,7 @@ class GreatDocs:
         Returns
         -------
         Optional[list]
-            List of public names from __all__ (filtered by __gt_exclude__), or None if not found.
+            List of public names from __all__ (filtered by exclusions), or None if not found.
         """
         # Find the package's __init__.py file
         init_file = self._find_package_init(package_name)
@@ -455,6 +462,10 @@ class GreatDocs:
             return None
 
         print(f"Found package __init__.py at: {init_file.relative_to(self.project_root)}")
+
+        # Get exclusions from pyproject.toml [tool.great-docs]
+        metadata = self._get_package_metadata()
+        config_exclude = metadata.get("exclude", [])
 
         try:
             with open(init_file, "r", encoding="utf-8") as f:
@@ -479,7 +490,7 @@ class GreatDocs:
                                     if isinstance(elt, ast.Constant) and isinstance(elt.value, str):
                                         all_exports.append(elt.value)
 
-                        # Extract __gt_exclude__
+                        # Extract __gt_exclude__ (legacy support)
                         if isinstance(target, ast.Name) and target.id == "__gt_exclude__":
                             if isinstance(node.value, ast.List):
                                 for elt in node.value.elts:
@@ -489,13 +500,21 @@ class GreatDocs:
             if all_exports:
                 print(f"Successfully parsed __all__ with {len(all_exports)} exports")
 
+                # Combine exclusions from both sources
+                all_exclude = list(set(gt_exclude + config_exclude))
+
                 # Filter out excluded items
-                if gt_exclude:
-                    filtered = [e for e in all_exports if e not in gt_exclude]
+                if all_exclude:
+                    filtered = [e for e in all_exports if e not in all_exclude]
                     excluded_count = len(all_exports) - len(filtered)
                     if excluded_count > 0:
+                        source = []
+                        if gt_exclude:
+                            source.append("__gt_exclude__")
+                        if config_exclude:
+                            source.append("[tool.great-docs] exclude")
                         print(
-                            f"Filtered out {excluded_count} item(s) from __gt_exclude__: {', '.join(gt_exclude)}"
+                            f"Filtered out {excluded_count} item(s) from {' and '.join(source)}: {', '.join(all_exclude)}"
                         )
                     return filtered
                 else:
@@ -795,13 +814,14 @@ title: "License"
                 "homepage": None,  # Skip if we already added PyPI
                 "repository": "Browse source code",
                 "bug_tracker": "Report a bug",
-                "documentation": "Documentation",
+                "documentation": None,  # Skip for that's the site we're on
             }
 
             for name, url in urls.items():
                 name_lower = name.lower().replace(" ", "_")
                 display_name = url_map.get(name_lower, name.replace("_", " ").title())
-                # Skip if display_name is None (homepage case when PyPI already added)
+
+                # Skip if display_name is None (homepage/documentation)
                 if display_name:
                     margin_sections.append(f"[{display_name}]({url})  ")
 
@@ -855,19 +875,108 @@ title: "Code of Conduct"
             margin_sections.extend(community_items)
 
         # Developers section (Authors)
-        if metadata.get("authors"):
+        # Use rich author metadata if available, otherwise fall back to standard authors
+        authors_to_display = metadata.get("rich_authors") or metadata.get("authors", [])
+
+        if authors_to_display:
             margin_sections.append("\n## Developers\n")
-            for author in metadata["authors"]:
+
+            # Try to extract GitHub username from repository URL as fallback
+            fallback_github = None
+            if metadata.get("urls"):
+                repo_url = metadata["urls"].get("repository", "") or metadata["urls"].get(
+                    "Repository", ""
+                )
+                if "github.com/" in repo_url:
+                    # Extract username from URL like https://github.com/username/repo
+                    parts = repo_url.rstrip("/").split("github.com/")
+                    if len(parts) > 1:
+                        username_part = parts[1].split("/")[0]
+                        if username_part:
+                            fallback_github = username_part
+
+            for idx, author in enumerate(authors_to_display):
                 if isinstance(author, dict):
                     name = author.get("name", "")
-                    if author.get("email"):
-                        margin_sections.append(f"{name} &lt;{author['email']}&gt;  ")
-                    else:
-                        margin_sections.append(f"{name}  ")
+                    email = author.get("email", "")
 
-        # Meta section (Python version) - removed keywords
+                    # Rich metadata fields (from tool.great-docs.authors)
+                    role = author.get("role", "")
+                    affiliation = author.get("affiliation", "")
+                    github = author.get("github", "")
+                    homepage = author.get("homepage", "")
+                    orcid = author.get("orcid", "")
+
+                    # Build author line with name
+                    author_parts = [f"**{name}**" if role else name]
+
+                    # Add role/affiliation as subtitle if available
+                    subtitle_parts = []
+                    if role:
+                        subtitle_parts.append(role)
+                    if affiliation:
+                        subtitle_parts.append(affiliation)
+
+                    if subtitle_parts:
+                        author_parts.append(f"<br><small>{', '.join(subtitle_parts)}</small>")
+
+                    # Add icon links
+                    icon_links = []
+
+                    if email:
+                        icon_links.append(
+                            f'<a href="mailto:{email}" title="Email"><i class="bi bi-envelope-fill"></i></a>'
+                        )
+
+                    if github:
+                        icon_links.append(
+                            f'<a href="https://github.com/{github}" title="GitHub"><i class="bi bi-github"></i></a>'
+                        )
+                    elif fallback_github:
+                        icon_links.append(
+                            f'<a href="https://github.com/{fallback_github}" title="GitHub"><i class="bi bi-github"></i></a>'
+                        )
+
+                    if homepage:
+                        icon_links.append(
+                            f'<a href="{homepage}" title="Homepage"><i class="bi bi-house-fill"></i></a>'
+                        )
+
+                    if orcid:
+                        # ORCID should be a full URL or just the ID
+                        orcid_url = (
+                            orcid if orcid.startswith("http") else f"https://orcid.org/{orcid}"
+                        )
+                        icon_links.append(
+                            f'<a href="{orcid_url}" title="ORCID"><i class="fa-brands fa-orcid"></i></a>'
+                        )
+
+                    if icon_links:
+                        author_parts.append("<br>" + " ".join(icon_links))
+
+                    # Wrap in <p> tag with padding for non-first authors
+                    author_content = " ".join(author_parts)
+                    if idx == 0:
+                        margin_sections.append(f"<p>{author_content}</p>")
+                    else:
+                        margin_sections.append(
+                            f'<p style="padding-top: 10px;">{author_content}</p>'
+                        )
+
+        # Meta section (Python version and extras)
+        meta_items = []
         if metadata.get("requires_python"):
-            margin_sections.append(f"\n**Python {metadata['requires_python']}**")
+            meta_items.append(f"**Requires:** Python {metadata['requires_python']}")
+
+        if metadata.get("optional_dependencies"):
+            extras = list(metadata["optional_dependencies"].keys())
+            if extras:
+                extras_str = ", ".join(extras)
+                meta_items.append(f"**Provides-Extra:** {extras_str}")
+
+        if meta_items:
+            margin_sections.append("\n## Meta\n")
+            margin_sections.append("  \n".join(meta_items))
 
         # Build margin content
         margin_content = "\n".join(margin_sections) if margin_sections else ""
@@ -1010,6 +1119,26 @@ title: ""
         # Ensure flatly theme is used (works well with great-docs)
         if "theme" not in config["format"]["html"]:
             config["format"]["html"]["theme"] = "flatly"
+
+        # Add Font Awesome for ORCID icon support
+        if "include-in-header" not in config["format"]["html"]:
+            config["format"]["html"]["include-in-header"] = []
+        elif isinstance(config["format"]["html"]["include-in-header"], str):
+            config["format"]["html"]["include-in-header"] = [
+                config["format"]["html"]["include-in-header"]
+            ]
+
+        # Add Font Awesome CDN if not already present
+        fa_cdn = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">'
+        fa_entry = {"text": fa_cdn}
+        if fa_entry not in config["format"]["html"]["include-in-header"]:
+            # Check if any Font Awesome link already exists
+            has_fa = any(
+                "font-awesome" in str(item).lower()
+                for item in config["format"]["html"]["include-in-header"]
+            )
+            if not has_fa:
+                config["format"]["html"]["include-in-header"].append(fa_entry)
 
         # Add website navigation if not present
         if "website" not in config:

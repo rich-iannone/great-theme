@@ -774,13 +774,25 @@ title: "License"
         margin_sections = []
 
         # Links section
-        if metadata.get("urls"):
+        links_added = []
+
+        # Try to add PyPI link based on package name
+        package_name = self._detect_package_name()
+        if package_name:
+            pypi_url = f"https://pypi.org/project/{package_name}/"
             margin_sections.append("## Links\n")
+            margin_sections.append(f"[View on PyPI]({pypi_url})  ")
+            links_added.append("pypi")
+
+        if metadata.get("urls"):
+            if not links_added:
+                margin_sections.append("## Links\n")
+
             urls = metadata["urls"]
 
             # Map common URL names to display text
             url_map = {
-                "homepage": "View on PyPI",
+                "homepage": None,  # Skip if we already added PyPI
                 "repository": "Browse source code",
                 "bug_tracker": "Report a bug",
                 "documentation": "Documentation",
@@ -789,7 +801,9 @@ title: "License"
             for name, url in urls.items():
                 name_lower = name.lower().replace(" ", "_")
                 display_name = url_map.get(name_lower, name.replace("_", " ").title())
-                margin_sections.append(f"[{display_name}]({url})  ")
+                # Skip if display_name is None (homepage case when PyPI already added)
+                if display_name:
+                    margin_sections.append(f"[{display_name}]({url})  ")
 
         # License section
         if license_link:

@@ -43,21 +43,21 @@ website:
     logo: assets/logo.png # Optional
 ```
 
-### 2. Copy theme files
+### 2. Copy docs files
 
 ```python
 from great_docs import GreatDocs
 
-# Initialize theme for current directory
-theme = GreatDocs()
+# Initialize docs for current directory
+docs = GreatDocs()
 
-# Install theme files
-theme.install()
+# Install docs files
+docs.install()
 ```
 
 ## Customization
 
-You can customize the theme by:
+You can customize by:
 
 1. Editing the copied `great-docs.css` file
 2. Modifying the `scripts/post-render.py` script

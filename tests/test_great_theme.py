@@ -7,24 +7,24 @@ from pathlib import Path
 from great_docs import GreatDocs
 
 
-def test_great_theme_init():
+def test_great_docs_init():
     """Test GreatDocs initialization."""
-    theme = GreatDocs(docs_dir=".")
-    assert theme.project_root == Path.cwd()
+    docs = GreatDocs(docs_dir=".")
+    assert docs.project_root == Path.cwd()
 
 
-def test_great_theme_init_with_path():
+def test_great_docs_init_with_path():
     """Test GreatDocs initialization with custom path."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-        theme = GreatDocs(project_path=tmp_dir, docs_dir=".")
-        assert theme.project_root == Path(tmp_dir)
+        docs = GreatDocs(project_path=tmp_dir, docs_dir=".")
+        assert docs.project_root == Path(tmp_dir)
 
 
 def test_install_creates_files():
     """Test that install creates the expected files."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-        theme = GreatDocs(project_path=tmp_dir, docs_dir=".")
-        theme.install(force=True, skip_quartodoc=True)
+        docs = GreatDocs(project_path=tmp_dir, docs_dir=".")
+        docs.install(force=True, skip_quartodoc=True)
 
         # Check that files were created
         project_path = Path(tmp_dir)
@@ -34,26 +34,26 @@ def test_install_creates_files():
 
 
 def test_uninstall_removes_files():
-    """Test that uninstall removes the theme files."""
+    """Test that uninstall removes the docs files."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-        theme = GreatDocs(project_path=tmp_dir, docs_dir=".")
+        docs = GreatDocs(project_path=tmp_dir, docs_dir=".")
 
         # Install first
-        theme.install(force=True, skip_quartodoc=True)
+        docs.install(force=True, skip_quartodoc=True)
 
         project_path = Path(tmp_dir)
         assert (project_path / "scripts" / "post-render.py").exists()
         assert (project_path / "great-docs.css").exists()
 
         # Then uninstall
-        theme.uninstall()
+        docs.uninstall()
 
 
 def test_parse_package_exports():
     """Test parsing __all__ from __init__.py."""
     # Test on great-docs's own __init__.py
-    theme = GreatDocs(docs_dir=".")
-    exports = theme._parse_package_exports("great_docs")
+    docs = GreatDocs(docs_dir=".")
+    exports = docs._parse_package_exports("great_docs")
 
     assert exports is not None
     assert "GreatDocs" in exports
@@ -62,8 +62,8 @@ def test_parse_package_exports():
 
 def test_create_quartodoc_sections():
     """Test auto-generation of quartodoc sections."""
-    theme = GreatDocs(docs_dir=".")
-    sections = theme._create_quartodoc_sections("great_docs")
+    docs = GreatDocs(docs_dir=".")
+    sections = docs._create_quartodoc_sections("great_docs")
 
     assert sections is not None
     assert len(sections) > 0
@@ -76,16 +76,16 @@ def test_create_quartodoc_sections():
 def test_detect_package_name_from_pyproject():
     """Test package name detection from pyproject.toml."""
     # Test on great-docs's own pyproject.toml
-    theme = GreatDocs(docs_dir=".")
-    package_name = theme._detect_package_name()
+    docs = GreatDocs(docs_dir=".")
+    package_name = docs._detect_package_name()
 
     assert package_name == "great-docs"
 
 
 def test_find_package_init():
     """Test finding __init__.py in standard location."""
-    theme = GreatDocs(docs_dir=".")
-    init_file = theme._find_package_init("great_docs")
+    docs = GreatDocs(docs_dir=".")
+    init_file = docs._find_package_init("great_docs")
 
     assert init_file is not None
     assert init_file.exists()
@@ -105,8 +105,8 @@ def test_find_package_init_with_nested_structure():
         init_file = package_dir / "__init__.py"
         init_file.write_text('__version__ = "1.0.0"\n__all__ = ["MyClass"]')
 
-        theme = GreatDocs(project_path=tmp_dir, docs_dir=".")
-        found_init = theme._find_package_init("mypackage")
+        docs = GreatDocs(project_path=tmp_dir, docs_dir=".")
+        found_init = docs._find_package_init("mypackage")
 
         assert found_init is not None
         assert found_init == init_file
@@ -158,8 +158,8 @@ def some_function():
         # Add temp dir to sys.path so griffe can find the package
         sys.path.insert(0, tmp_dir)
         try:
-            theme = GreatDocs(project_path=tmp_dir, docs_dir=".")
-            sections = theme._create_quartodoc_sections("testpkg")
+            docs = GreatDocs(project_path=tmp_dir, docs_dir=".")
+            sections = docs._create_quartodoc_sections("testpkg")
 
             assert sections is not None
 
@@ -241,8 +241,8 @@ def some_function():
 '''
         (package_dir / "__init__.py").write_text(init_content)
 
-        theme = GreatDocs(project_path=tmp_dir, docs_dir=".")
-        exports = theme._parse_package_exports("testpkg_exclude")
+        docs = GreatDocs(project_path=tmp_dir, docs_dir=".")
+        exports = docs._parse_package_exports("testpkg_exclude")
 
         # Should have filtered out Node and Edge
         assert exports is not None

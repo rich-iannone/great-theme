@@ -109,7 +109,7 @@ Great Docs automatically initializes a quartodoc site and includes:
 ### CLI Commands
 
 ```bash
-# Initialize theme (auto-detects docs directory)
+# Initialize the docs (auto-detects docs directory)
 great-docs init
 
 # Initialize to specific docs directory
@@ -133,7 +133,7 @@ great-docs build --watch
 # Build and serve locally with live preview
 great-docs preview
 
-# Remove theme from project
+# Remove docs from project
 great-docs uninstall
 
 # Uninstall from specific docs directory
@@ -146,30 +146,30 @@ great-docs uninstall --docs-dir docs
 from great_docs import GreatDocs
 
 # Initialize for current directory (auto-detects docs dir)
-theme = GreatDocs()
+docs = GreatDocs()
 
-# Install theme files and configuration
-theme.install()
+# Install docs files and configuration
+docs.install()
 
 # Build documentation
-theme.build()
+docs.build()
 
 # Build with watch mode
-theme.build(watch=True)
+docs.build(watch=True)
 
 # Preview locally
-theme.preview()
+docs.preview()
 
 # Initialize with specific project root
-theme = GreatDocs(project_path="/path/to/project")
-theme.install()
+docs = GreatDocs(project_path="/path/to/project")
+docs.install()
 
 # Initialize with specific docs directory
-theme = GreatDocs(project_path="/path/to/project", docs_dir="docs")
-theme.install()
+docs = GreatDocs(project_path="/path/to/project", docs_dir="docs")
+docs.install()
 
-# Remove theme
-theme.uninstall()
+# Remove the docs
+docs.uninstall()
 ```
 
 ## What Gets Installed
@@ -179,9 +179,9 @@ When you run `great-docs init`, the following files are added to your documentat
 ```
 your-project/
 ├── docs/                # Or your chosen docs directory
-│   ├── _quarto.yml      # Updated with theme configuration
+│   ├── _quarto.yml      # Updated with configuration
 │   ├── index.qmd        # Auto-created from README.md
-│   ├── great-docs.css  # Main theme stylesheet
+│   ├── great-docs.css   # Main stylesheet
 │   └── scripts/
 │       └── post-render.py   # HTML post-processing script
 ```
@@ -316,40 +316,40 @@ If you prefer to run commands separately or customize the workflow:
 
    ```bash
    quartodoc build
-   # or use: great-theme build
+   # or use: great-docs build
    ```
 
 3. **Build your site**:
 
    ```bash
    quarto render
-   # or use: great-theme build (does both steps)
+   # or use: great-docs build (does both steps)
    ```
 
 4. **Preview locally with live reload**:
 
    ```bash
-   great-theme preview
+   great-docs preview
    # or: quarto preview
    ```
 
-Your documentation is now live with great-theme styling!
+Your documentation is now live with great-docs styling!
 
 ### Troubleshooting
 
 **CyclicAliasError from quartodoc**: If `quartodoc build` fails with a `CyclicAliasError` for certain exports, you may need to exclude problematic items from your quartodoc configuration. This can happen with re-exported constants or objects that create circular references in the import graph.
 
-**quartodoc not installed**: Great-theme requires `quartodoc` to generate API documentation. Install it with:
+**quartodoc not installed**: Great Docs requires `quartodoc` to generate API documentation. Install it with:
 
 ```bash
 pip install quartodoc
 ```
 
-Your documentation is now live with Great Theme styling!
+Your documentation is now live with Great Docs styling!
 
 ## Configuration
 
-The theme works with your existing `_quarto.yml` configuration. After installation, your config will include:
+This all should work with any existing `_quarto.yml` configuration. After installation, your config will include:
 
 ```yaml
 project:

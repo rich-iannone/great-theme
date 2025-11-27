@@ -215,6 +215,8 @@ class GreatDocs:
         # Add quartodoc configuration if not present
         if not skip_quartodoc:
             self._add_quartodoc_config()
+            self._update_sidebar_from_sections()
+            self._update_reference_index_frontmatter()
 
         print("\nGreat Docs installation complete!")
         if not skip_quartodoc:
@@ -1300,11 +1302,103 @@ title: ""
                 ]
             }
 
+        # Add sidebar navigation for reference pages
+        if "sidebar" not in config["website"]:
+            config["website"]["sidebar"] = [
+                {
+                    "id": "reference",
+                    "contents": "reference/",
+                }
+            ]
+
         # Write back to file
         with open(quarto_yml, "w") as f:
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
         print(f"Updated {quarto_yml} with great-docs configuration")
+
+    def _update_sidebar_from_sections(self) -> None:
+        """
+        Update sidebar navigation based on quartodoc sections.
+
+        Builds a structured sidebar with sections and their contents,
+        and excludes the index page from showing the sidebar.
+        """
+        quarto_yml = self.project_path / "_quarto.yml"
+
+        if not quarto_yml.exists():
+            return
+
+        with open(quarto_yml, "r") as f:
+            config = yaml.safe_load(f) or {}
+
+        # Get quartodoc sections if they exist
+        if "quartodoc" not in config or "sections" not in config["quartodoc"]:
+            return
+
+        sections = config["quartodoc"]["sections"]
+        sidebar_contents = []
+
+        # Build sidebar structure from sections
+        for section in sections:
+            section_entry = {"section": section["title"], "contents": []}
+
+            # Add each item in the section
+            for item in section.get("contents", []):
+                # Handle both string and dict formats
+                if isinstance(item, str):
+                    section_entry["contents"].append(f"reference/{item}.qmd")
+                else:
+                    # If it's a dict with name/contents, handle appropriately
+                    section_entry["contents"].append(f"reference/{item}.qmd")
+
+            sidebar_contents.append(section_entry)
+
+        # Update sidebar configuration
+        if "website" not in config:
+            config["website"] = {}
+
+        config["website"]["sidebar"] = [
+            {
+                "id": "reference",
+                "contents": sidebar_contents,
+            }
+        ]
+
+        # Write back
+        with open(quarto_yml, "w") as f:
+            yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+
+    def _update_reference_index_frontmatter(self) -> None:
+        """Add frontmatter to reference/index.qmd to hide the sidebar."""
+        index_path = self.docs_dir / "reference" / "index.qmd"
+
+        if not index_path.exists():
+            return
+
+        # Read the current content
+        with open(index_path, "r") as f:
+            content = f.read()
+
+        # Check if frontmatter already exists
+        if content.startswith("---"):
+            # Parse existing frontmatter
+            parts = content.split("---", 2)
+            if len(parts) >= 3:
+                frontmatter = parts[1]
+                body = parts[2]
+
+                # Add sidebar: false if not present
+                if "sidebar:" not in frontmatter:
+                    frontmatter = frontmatter.rstrip() + "\nsidebar: false\n"
+                    content = f"---{frontmatter}---{body}"
+        else:
+            # Add new frontmatter
+            content = f"---\nsidebar: false\n---\n\n{content}"
+
+        # Write updated content
+        with open(index_path, "w") as f:
+            f.write(content)
 
     def uninstall(self) -> None:
         """

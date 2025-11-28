@@ -1,0 +1,156 @@
+[
+  {
+    "objectID": "code-of-conduct.html",
+    "href": "code-of-conduct.html",
+    "title": "Code of Conduct",
+    "section": "",
+    "text": "We pledge to make our community welcoming, safe, and equitable for all.\nWe are committed to fostering an environment that respects and promotes the dignity, rights, and contributions of all individuals, regardless of characteristics including race, ethnicity, caste, color, age, physical characteristics, neurodiversity, disability, sex or gender, gender identity or expression, sexual orientation, language, philosophy or religion, national or social origin, socio-economic position, level of education, or other status. The same privileges of participation are extended to everyone who participates in good faith and in accordance with this Covenant."
+  },
+  {
+    "objectID": "code-of-conduct.html#other-restrictions",
+    "href": "code-of-conduct.html#other-restrictions",
+    "title": "Code of Conduct",
+    "section": "Other Restrictions",
+    "text": "Other Restrictions\n\nMisleading identity. Impersonating someone else for any reason, or pretending to be someone else to evade enforcement actions.\nFailing to credit sources. Not properly crediting the sources of content you contribute.\nPromotional materials. Sharing marketing or other commercial content in a way that is outside the norms of the community.\nIrresponsible communication. Failing to responsibly present content which includes, links or describes any other restricted behaviors."
+  },
+  {
+    "objectID": "citation.html",
+    "href": "citation.html",
+    "title": "Authors and Citation",
+    "section": "",
+    "text": "Authors\nRich Iannone. Maintainer.\n\n\nCitation\nSource: CITATION.cff\nIannone R (2025). Great Docs: A comprehensive documentation site generator for Python packages. Python package version 0.1.0, https://github.com/rich-iannone/great-docs.\n@Manual{,\n  title = {Great Docs: A comprehensive documentation site generator for Python packages.},\n  author = {Rich Iannone},\n  year = {2025},\n  note = {Python package version 0.1.0},\n  url = {https://github.com/rich-iannone/great-docs},\n}"
+  },
+  {
+    "objectID": "contributing.html",
+    "href": "contributing.html",
+    "title": "Contributing",
+    "section": "",
+    "text": "Thank you for your interest in contributing to Great Docs! We welcome contributions from the community."
+  },
+  {
+    "objectID": "contributing.html#reporting-issues",
+    "href": "contributing.html#reporting-issues",
+    "title": "Contributing",
+    "section": "Reporting Issues",
+    "text": "Reporting Issues\nIf you find a bug or have a suggestion for improvement:\n\nCheck if the issue already exists in the issue tracker\nIf not, create a new issue with a clear description\nInclude steps to reproduce (for bugs) or use cases (for features)"
+  },
+  {
+    "objectID": "contributing.html#submitting-pull-requests",
+    "href": "contributing.html#submitting-pull-requests",
+    "title": "Contributing",
+    "section": "Submitting Pull Requests",
+    "text": "Submitting Pull Requests\n\nFork the repository\nCreate a new branch for your changes: git checkout -b feature/your-feature-name\nMake your changes and commit them with clear, descriptive messages\nAdd tests for new functionality\nEnsure all tests pass: pytest\nPush to your fork and submit a pull request"
+  },
+  {
+    "objectID": "contributing.html#development-setup",
+    "href": "contributing.html#development-setup",
+    "title": "Contributing",
+    "section": "Development Setup",
+    "text": "Development Setup\n# Clone your fork\ngit clone https://github.com/YOUR-USERNAME/great-docs.git\ncd great-docs\n\n# Create a virtual environment\npython -m venv .venv\nsource .venv/bin/activate  # On Windows: .venv\\Scripts\\activate\n\n# Install in development mode\npip install -e \".[dev]\"\n\n# Run tests\npytest"
+  },
+  {
+    "objectID": "contributing.html#code-style",
+    "href": "contributing.html#code-style",
+    "title": "Contributing",
+    "section": "Code Style",
+    "text": "Code Style\n\nFollow PEP 8 guidelines\nUse meaningful variable and function names\nAdd docstrings to functions and classes\nKeep functions focused and concise"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Features",
+    "section": "",
+    "text": "View on PyPI\nBrowse source code\nReport a bug\n\n\n\nFull license\n\n\n\nContributing guide\nCode of conduct\n\n\n\n\nRich Iannone Maintainer Posit, PBC   \n\n\nTomasz Kalinowski Contributor Posit, PBC  \n\n\n\n\nRequires: Python &gt;=3.8\nProvides-Extra: dev\n\n\n\nCiting great-docs\nGreat Docs for Python Documentation Sites\nA comprehensive documentation site generator for Python packages. Great Docs automatically creates beautiful, professional documentation sites with auto-generated API references, smart navigation, and modern styling."
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "Features",
+    "section": "Installation",
+    "text": "Installation\n\nFrom PyPI (when published)\npip install great-docs\n\n\nFrom GitHub\nInstall the latest version directly from the GitHub repository:\npip install git+https://github.com/rich-iannone/great-docs.git\nOr install a specific branch, tag, or commit:\n# Install from a specific branch\npip install git+https://github.com/rich-iannone/great-docs.git@main\n\n# Install from a specific tag\npip install git+https://github.com/rich-iannone/great-docs.git@v0.1.0\n\n# Install from a specific commit\npip install git+https://github.com/rich-iannone/great-docs.git@abc1234\nFor development or editable installation:\n# Clone the repository\ngit clone https://github.com/rich-iannone/great-docs.git\ncd great-docs\n\n# Install in editable mode\npip install -e .\n\n# Or install with development dependencies\npip install -e \".[dev]\""
+  },
+  {
+    "objectID": "index.html#apply-to-your-project",
+    "href": "index.html#apply-to-your-project",
+    "title": "Features",
+    "section": "Apply to Your Project",
+    "text": "Apply to Your Project\nNavigate to your project root directory and run:\ngreat-docs init\nThe installer will:\n\nAutomatically detect existing documentation directories (docs/, site/, etc.)\nLook for existing _quarto.yml files to determine the correct location\nPrompt you to choose a location if no docs directory is found\nInstall all necessary files to the detected or chosen directory\nAuto-create index.qmd from your README.md (like pkgdown does)\nAuto-detect your package name from pyproject.toml, setup.py, or directory structure\nAuto-generate API sections by parsing __all__ from your package’s __init__.py\nAdd website navigation with Home and API Reference links in the navbar\n\nThis up-and-running site sets you up for success with your documentation dreams."
+  },
+  {
+    "objectID": "index.html#nice-visuals",
+    "href": "index.html#nice-visuals",
+    "title": "Features",
+    "section": "Nice Visuals",
+    "text": "Nice Visuals\n\nfunction signatures styled with monospace fonts\ntype annotations with improved formatting\nparameter descriptions with better spacing\ncode blocks with enhanced syntax highlighting"
+  },
+  {
+    "objectID": "index.html#smart-labeling",
+    "href": "index.html#smart-labeling",
+    "title": "Features",
+    "section": "Smart Labeling",
+    "text": "Smart Labeling\n\nclasses get green labels and styling\nmethods get blue labels (e.g., Class.method())\nfunctions get orange labels (e.g., function())"
+  },
+  {
+    "objectID": "index.html#responsive-design",
+    "href": "index.html#responsive-design",
+    "title": "Features",
+    "section": "Responsive Design",
+    "text": "Responsive Design\n\nmobile-friendly navigation\noptimized sidebar behavior\ntouch-friendly interface elements"
+  },
+  {
+    "objectID": "index.html#cli-commands",
+    "href": "index.html#cli-commands",
+    "title": "Features",
+    "section": "CLI Commands",
+    "text": "CLI Commands\n# Initialize the docs (auto-detects docs directory)\ngreat-docs init\n\n# Initialize to specific docs directory\ngreat-docs init --docs-dir docs\n\n# Initialize to specific project\ngreat-docs init --project-path /path/to/project\n\n# Initialize with specific docs directory in a project\ngreat-docs init --project-path /path/to/project --docs-dir documentation\n\n# Force overwrite existing files\ngreat-docs init --force\n\n# Build documentation\ngreat-docs build\n\n# Build and watch for changes\ngreat-docs build --watch\n\n# Build and serve locally with live preview\ngreat-docs preview\n\n# Remove docs from project\ngreat-docs uninstall\n\n# Uninstall from specific docs directory\ngreat-docs uninstall --docs-dir docs"
+  },
+  {
+    "objectID": "index.html#python-api",
+    "href": "index.html#python-api",
+    "title": "Features",
+    "section": "Python API",
+    "text": "Python API\nfrom great_docs import GreatDocs\n\n# Initialize for current directory (auto-detects docs dir)\ndocs = GreatDocs()\n\n# Install docs files and configuration\ndocs.install()\n\n# Build documentation\ndocs.build()\n\n# Build with watch mode\ndocs.build(watch=True)\n\n# Preview locally\ndocs.preview()\n\n# Initialize with specific project root\ndocs = GreatDocs(project_path=\"/path/to/project\")\ndocs.install()\n\n# Initialize with specific docs directory\ndocs = GreatDocs(project_path=\"/path/to/project\", docs_dir=\"docs\")\ndocs.install()\n\n# Remove the docs\ndocs.uninstall()"
+  },
+  {
+    "objectID": "index.html#auto-generated-configuration",
+    "href": "index.html#auto-generated-configuration",
+    "title": "Features",
+    "section": "Auto-Generated Configuration",
+    "text": "Auto-Generated Configuration\nThe installer intelligently configures your documentation site:\n\nindex.qmd from README.md: Your README becomes your documentation homepage (like pkgdown)\nAPI reference configuration: Auto-detects your package name from:\n\npyproject.toml\nsetup.py\nPackage directory structure\n\nAuto-generated API sections: Parses your package’s __init__.py to read __all__ and automatically creates organized sections for:\n\nClasses\nFunctions\nOther exports\n\nSensible defaults: Includes recommended settings:\nquartodoc:\n  package: your-package # Auto-detected\n  dir: reference\n  title: API Reference\n  style: pkgdown\n  dynamic: true\n  renderer:\n    style: markdown\n    table_style: description-list\n  sections: # Auto-generated from __all__\n    - title: Classes\n      desc: Core classes and types\n      contents:\n        - YourClass\n        - AnotherClass\n    - title: Functions\n      desc: Public functions\n      contents:\n        - your_function\n\nRequirements for auto-generation:\n\nYour package must have __all__ defined in __init__.py\nNames in __all__ should be importable from the package\n\nFiltering non-documentable items:\nIf your package includes items that can’t be auto-documented (e.g., Rust types, C bindings), you can exclude them in your pyproject.toml:\n# In your pyproject.toml\n[tool.great-docs]\nexclude = [\"Node\", \"Edge\"]  # Items to exclude from documentation\nAlternatively, you can use __gt_exclude__ directly in your __init__.py (legacy method):\n# In your package's __init__.py\n__all__ = [\"Graph\", \"Node\", \"Edge\", \"some_function\"]\n\n# Exclude items that can't be auto-documented\n__gt_exclude__ = [\"Node\", \"Edge\"]  # Rust types\nGreat Docs will automatically filter out items from either source when generating the configuration. Using [tool.great-docs] exclude in pyproject.toml is recommended as it keeps configuration centralized.\nGreat Docs will search for your package in standard locations including:\n\nProject root (e.g., your-package/)\npython/ directory (common for Rust/Python hybrid packages)\nsrc/ directory\nlib/ directory\n\nIf __all__ is not found, Great Docs will create a basic configuration and you can manually add sections."
+  },
+  {
+    "objectID": "index.html#smart-method-splitting",
+    "href": "index.html#smart-method-splitting",
+    "title": "Features",
+    "section": "Smart Method Splitting",
+    "text": "Smart Method Splitting\nGreat Docs uses griffe to analyze your package without importing it. This enables:\n\nSafe introspection: Works with packages containing non-Python components\nAccurate method counting: Counts actual public methods on each class\nSmart categorization: Automatically identifies classes, functions, and other objects\nAutomatic method enumeration: Explicitly lists all methods for documentation\n\nBased on method count:\n\nClasses with ≤5 methods: Methods are documented inline on the class page\nClasses with &gt;5 methods:\n\nClass page is created with members: [] to suppress inline method documentation\nCreates a separate section with all methods explicitly listed\nEach method gets its own documentation page\n\n\nFor example, if your Graph class has 191 methods, Great Docs will:\n\nAdd Graph to the Classes section with members: [] (suppresses inline method docs)\nCreate a new “Graph Methods” section listing all 191 methods: Graph.add_node, Graph.add_edge, etc.\nEach method gets its own documentation page for better navigation\n\nGenerated configuration:\nquartodoc:\n  sections:\n    - title: Classes\n      desc: Core classes and types\n      contents:\n        - name: Graph\n          members: [] # Suppresses inline method documentation\n\n    - title: Graph Methods\n      desc: Methods for the Graph class\n      contents:\n        - Graph.add_node\n        - Graph.add_edge\n        # ... all 191 methods\nThis prevents overwhelming single-page documentation and improves navigation for large classes."
+  },
+  {
+    "objectID": "index.html#detailed-steps",
+    "href": "index.html#detailed-steps",
+    "title": "Features",
+    "section": "Detailed Steps",
+    "text": "Detailed Steps\nIf you prefer to run commands separately or customize the workflow:\n\n(Optional) Edit the API documentation sections in _quarto.yml to organize your documentation as needed.\nGenerate API reference pages:\nquartodoc build\n# or use: great-docs build\nBuild your site:\nquarto render\n# or use: great-docs build (does both steps)\nPreview locally with live reload:\ngreat-docs preview\n# or: quarto preview\n\nYour documentation is now live with great-docs styling!"
+  },
+  {
+    "objectID": "index.html#troubleshooting",
+    "href": "index.html#troubleshooting",
+    "title": "Features",
+    "section": "Troubleshooting",
+    "text": "Troubleshooting\nCyclicAliasError during build: If the build fails with a CyclicAliasError for certain exports, you may need to exclude problematic items from your configuration. This can happen with re-exported constants or objects that create circular references in the import graph.\nquartodoc not installed: Great Docs requires quartodoc to generate API documentation. Install it with:\npip install quartodoc\nYour documentation is now live with Great Docs styling!"
+  },
+  {
+    "objectID": "index.html#landing-page-metadata-sidebar",
+    "href": "index.html#landing-page-metadata-sidebar",
+    "title": "Features",
+    "section": "Landing Page Metadata Sidebar",
+    "text": "Landing Page Metadata Sidebar\nGreat Docs automatically creates a metadata sidebar on your landing page (like pkgdown) that displays:\n\nLinks: PyPI, source code, bug tracker\nLicense: Link to full license text\nDevelopers: Author information with contact links\nMeta: Python version requirements and optional dependencies\n\nThe sidebar is automatically populated from your pyproject.toml metadata. To enhance the developer information with rich metadata, add a [tool.great-docs] section:\n# In your pyproject.toml\n\n# Standard author information (required for PyPI)\n[project]\nauthors = [\n    {name = \"Your Name\", email = \"you@example.com\"}\n]\n\n# Rich author metadata for documentation (optional)\n[tool.great-docs]\n\n[[tool.great-docs.authors]]\nname = \"Your Name\"\nemail = \"you@example.com\"\nrole = \"Lead Developer\"           # Optional: e.g., \"Lead Developer\", \"Contributor\"\naffiliation = \"Your Organization\" # Optional: e.g., \"Posit\", \"University Name\"\ngithub = \"yourusername\"           # Optional: GitHub username\nhomepage = \"https://yoursite.com\" # Optional: Personal website\norcid = \"0000-0002-1234-5678\"     # Optional: ORCID ID or full URL\n\n# Add more authors by repeating the [[tool.great-docs.authors]] section\n[[tool.great-docs.authors]]\nname = \"Second Author\"\nemail = \"second@example.com\"\nrole = \"Contributor\"\ngithub = \"secondauthor\"\nSupported fields (all optional except name):\n\nname (required): Author’s full name\nemail: Email address (creates a clickable email icon)\nrole: Role in the project (e.g., “Lead Developer”, “Contributor”, “Maintainer”)\naffiliation: Organization or institution (e.g., “Posit”, “MIT”)\ngithub: GitHub username (creates a clickable GitHub icon)\nhomepage: Personal website URL (creates a clickable home icon)\norcid: ORCID identifier or full URL (creates a clickable ORCID icon)\n\nIf [tool.great-docs.authors] is not present, Great Docs falls back to using the standard project.authors with automatically extracted GitHub information from your repository URL.\nExample output in sidebar:\n## Developers\n\nYour Name\nLead Developer, Your Organization\n📧 🐙 🏠\nWhere the icons link to email, GitHub, and homepage respectively."
+  },
+  {
+    "objectID": "license.html",
+    "href": "license.html",
+    "title": "License",
+    "section": "",
+    "text": "MIT License\n\nCopyright (c) 2025 Richard Iannone\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE."
+  }
+]

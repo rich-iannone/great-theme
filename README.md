@@ -133,6 +133,15 @@ great-docs build --watch
 # Build and serve locally with live preview
 great-docs preview
 
+# Set up GitHub Pages deployment workflow
+great-docs setup-github-pages
+
+# Set up with custom options
+great-docs setup-github-pages --docs-dir site --main-branch develop --python-version 3.12
+
+# Force overwrite existing workflow
+great-docs setup-github-pages --force
+
 # Remove docs from project
 great-docs uninstall
 
@@ -342,6 +351,60 @@ If you prefer to run commands separately or customize the workflow:
    ```
 
 Your documentation is now live with great-docs styling!
+
+## Deploying to GitHub Pages
+
+Great Docs makes it easy to deploy your documentation to GitHub Pages with a single command:
+
+```bash
+great-docs setup-github-pages
+```
+
+This command creates a complete GitHub Actions workflow (`.github/workflows/docs.yml`) that will:
+
+- **Build documentation** automatically on every push to main
+- **Deploy to GitHub Pages** when changes are merged to main
+- **Create preview deployments** for pull requests
+- **Cache dependencies** for faster builds
+
+### Customizing the Workflow
+
+You can customize the workflow generation with options:
+
+```bash
+# Use a different docs directory
+great-docs setup-github-pages --docs-dir site
+
+# Deploy from a different branch
+great-docs setup-github-pages --main-branch develop
+
+# Use a different Python version
+great-docs setup-github-pages --python-version 3.12
+
+# Combine options
+great-docs setup-github-pages --docs-dir site --main-branch develop --python-version 3.12
+```
+
+### Enabling GitHub Pages
+
+After generating the workflow:
+
+1. **Commit and push** the workflow file to your repository
+2. Go to your repository **Settings → Pages**
+3. Set **Source** to "GitHub Actions"
+4. Push changes to your main branch to trigger the first deployment
+
+Your documentation will be automatically published at `https://[username].github.io/[repository]`.
+
+### What the Workflow Does
+
+The generated workflow includes three jobs:
+
+- **build-docs**: Installs dependencies, sets up Quarto, and builds your documentation
+- **publish-docs**: Deploys to GitHub Pages (main branch only)
+- **preview-docs**: Creates preview deployments for pull requests
+
+All builds are cached for faster execution on subsequent runs.
 
 ### Troubleshooting
 

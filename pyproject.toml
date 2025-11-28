@@ -48,6 +48,7 @@ dev = [
     "mypy>=0.800",
     "build>=0.7",
     "twine>=3.4",
+    "pyright>=1.1.407",
 ]
 
 [project.urls]
@@ -136,3 +137,68 @@ line-ending = "auto"
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "E402"]
 "tests/*" = ["F401", "E402"]
+
+########## Tool - Pyright ##########
+[tool.pyright]
+# Paths of directories or files that should be included. If no paths
+# are specified, pyright defaults to the directory that contains the
+# config file. Paths may contain wildcard characters ** (a directory or
+# multiple levels of directories), * (a sequence of zero or more
+# characters), or ? (a single character). If no include paths are
+# specified, the root path for the workspace is assumed.
+include = [
+    "great_docs/renderer/"
+]
+
+# Paths of directories or files whose diagnostic output (errors and
+# warnings) should be suppressed even if they are an included file or
+# within the transitive closure of an included file. Paths may contain
+# wildcard characters ** (a directory or multiple levels of
+# directories), * (a sequence of zero or more characters), or ? (a
+# single character).
+ignore = []
+
+# Ref: https://microsoft.github.io/pyright/#/configuration?id=type-check-diagnostics-settings
+# Set of identifiers that should be assumed to contain a constant
+# value wherever used within this program. For example, { "DEBUG": true
+# } indicates that pyright should assume that the identifier DEBUG will
+# always be equal to True. If this identifier is used within a
+# conditional expression (such as if not DEBUG:) pyright will use the
+# indicated value to determine whether the guarded block is reachable
+# or not. Member expressions that reference one of these constants
+# (e.g. my_module.DEBUG) are also supported.
+defineConstant = { DEBUG = true }
+
+# pyright might switch this to true by default, we might as well
+deprecateTypingAliases = true
+
+# Turn on all the typing checks we can get, then make exceptions as required.
+typeCheckingMode = "strict"
+
+# These checks are not enabled on by "strict"
+reportUnnecessaryTypeIgnoreComment = true
+reportCallInDefaultInitializer = true
+reportPropertyTypeMismatch = true
+reportUnusedCallResult = true
+
+# These checks are not enabled on by "strict" but are too restrictive
+# for us to
+# reportImplicitOverride = true
+# reportImplicitStringConcatenation = true
+# reportImportCycles = true
+# reportMissingSuperCall = true
+# reportUninitializedInstanceVariable = true
+
+# These fail mainly because quartodoc is not fully type annotated
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+
+# Specifies a list of execution environments (see below). Execution
+# environments are searched from start to finish by comparing the path
+# of a source file with the root path specified in the execution
+# environment.
+executionEnvironments = []
+
+stubPath = ""
+

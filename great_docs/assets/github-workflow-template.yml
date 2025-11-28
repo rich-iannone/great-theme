@@ -44,17 +44,25 @@ jobs:
     needs: "build-docs"
     if: github.ref == 'refs/heads/{main_branch}'
     permissions:
-      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: docs-html
           path: {docs_dir}/_site
 
-      - uses: peaceiris/actions-gh-pages@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{{{ secrets.GITHUB_TOKEN }}}}
-          publish_dir: {docs_dir}/_site
+          path: {docs_dir}/_site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
   preview-docs:
     name: "Preview Docs"

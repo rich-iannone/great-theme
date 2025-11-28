@@ -1,22 +1,23 @@
 ---
 title: ""
+toc: false
 ---
 
 ::: {.column-margin}
 #### Links
 
-[View on PyPI](https://pypi.org/project/great-docs/)  
-[Browse source code](https://github.com/rich-iannone/great-docs)  
-[Report a bug](https://github.com/rich-iannone/great-docs/issues)  
+[View on PyPI](https://pypi.org/project/great-docs/)
+[Browse source code](https://github.com/rich-iannone/great-docs)
+[Report a bug](https://github.com/rich-iannone/great-docs/issues)
 
 #### License
 
-[Full license](license.qmd)  
+[Full license](license.qmd)
 
 #### Community
 
-[Contributing guide](contributing.qmd)  
-[Code of conduct](code-of-conduct.qmd)  
+[Contributing guide](contributing.qmd)
+[Code of conduct](code-of-conduct.qmd)
 
 #### Developers
 
@@ -25,7 +26,7 @@ title: ""
 
 #### Meta
 
-**Requires:** Python `>=3.8`  
+**Requires:** Python `>=3.8`
 **Provides-Extra:** `dev`
 
 #### Citation

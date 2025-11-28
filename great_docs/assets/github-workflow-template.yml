@@ -29,6 +29,7 @@ jobs:
       - name: Build docs
         run: |
           cd {docs_dir}
+          quartodoc build
           quarto render
 
       - name: Save docs artifact

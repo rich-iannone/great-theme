@@ -48,6 +48,9 @@ dev = [
     "build>=0.7",
     "twine>=3.4",
 ]
+docs = [
+    "quartodoc>=0.7.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/rich-iannone/great-docs"

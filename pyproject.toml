@@ -65,7 +65,7 @@ where = ["."]
 include = ["great_docs*"]
 
 [tool.setuptools.package-data]
-great_docs = ["assets/*"]
+great_docs = ["assets/*", "assets/.*"]
 
 [tool.setuptools]
 include-package-data = true

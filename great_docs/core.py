@@ -1,7 +1,7 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import yaml
 
@@ -742,7 +742,7 @@ class GreatDocs:
 
         return sections if sections else None
 
-    def _find_index_source_file(self) -> tuple[Path | None, list[str]]:
+    def _find_index_source_file(self) -> Tuple[Optional[Path], List[str]]:
         """
         Find the best source file for index.qmd based on priority.
 
@@ -753,7 +753,7 @@ class GreatDocs:
 
         Returns
         -------
-        tuple[Path | None, list[str]]
+        Tuple[Optional[Path], List[str]]
             A tuple of (source_file_path, warnings_list).
             source_file_path is None if no suitable file is found.
         """

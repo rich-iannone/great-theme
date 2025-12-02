@@ -1399,9 +1399,7 @@ toc: false
             metadata = self._get_package_metadata()
             repo_url = None
             if metadata.get("urls"):
-                repo_url = metadata["urls"].get("repository") or metadata["urls"].get(
-                    "Repository"
-                )
+                repo_url = metadata["urls"].get("repository") or metadata["urls"].get("Repository")
 
             if repo_url and "github.com" in repo_url:
                 navbar_config["right"] = [{"icon": "github", "href": repo_url}]

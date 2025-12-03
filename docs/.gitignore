@@ -3,6 +3,7 @@ _site/
 
 # Quartodoc generated files
 reference/
+objects.json
 
 # Python cache
 __pycache__/

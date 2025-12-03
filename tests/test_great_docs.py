@@ -336,3 +336,80 @@ def test_setup_github_pages_overwrite_protection():
 
         assert result.exit_code == 1
         assert "Aborted" in result.output
+
+
+def test_generate_llms_txt():
+    """Test generation of llms.txt file."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        docs = GreatDocs(project_path=tmp_dir, docs_dir=".")
+
+        # Create a pyproject.toml with package info
+        pyproject = Path(tmp_dir) / "pyproject.toml"
+        pyproject.write_text("""
+[project]
+name = "test-package"
+description = "A test package"
+""")
+
+        # Create a minimal _quarto.yml with quartodoc config
+        quarto_yml = Path(tmp_dir) / "_quarto.yml"
+        quarto_yml.write_text("""
+quartodoc:
+  package: test_package
+  sections:
+    - title: Main
+      desc: Main functions
+      contents:
+        - foo
+        - bar
+    - title: Classes
+      contents:
+        - MyClass
+""")
+
+        # Generate llms.txt
+        docs._generate_llms_txt()
+
+        # Check the file was created
+        llms_txt = Path(tmp_dir) / "llms.txt"
+        assert llms_txt.exists()
+
+        # Check content structure
+        content = llms_txt.read_text()
+        assert "# test_package" in content
+        assert "> A test package" in content
+        assert "## Docs" in content
+        assert "### API Reference" in content
+        assert "#### Main" in content
+        assert "> Main functions" in content
+        assert "- [foo](reference/foo.html)" in content
+        assert "- [bar](reference/bar.html)" in content
+        assert "#### Classes" in content
+        assert "- [MyClass](reference/MyClass.html)" in content
+
+
+def test_generate_llms_txt_with_site_url():
+    """Test llms.txt generation with site URL."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        docs = GreatDocs(project_path=tmp_dir, docs_dir=".")
+
+        # Create a minimal _quarto.yml with quartodoc config and site URL
+        quarto_yml = Path(tmp_dir) / "_quarto.yml"
+        quarto_yml.write_text("""
+website:
+  site-url: https://example.com/docs
+quartodoc:
+  package: test_package
+  sections:
+    - title: Main
+      contents:
+        - foo
+""")
+
+        # Generate llms.txt
+        docs._generate_llms_txt()
+
+        # Check the file was created with absolute URLs
+        llms_txt = Path(tmp_dir) / "llms.txt"
+        content = llms_txt.read_text()
+        assert "https://example.com/docs/reference/foo.html" in content

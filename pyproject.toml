@@ -52,7 +52,7 @@ docs = [
 [project.urls]
 Homepage = "https://github.com/rich-iannone/great-docs"
 Repository = "https://github.com/rich-iannone/great-docs"
-Documentation = "https://github.com/rich-iannone/great-docs#readme"
+Documentation = "https://rich-iannone.github.io/great-docs/"
 "Bug Tracker" = "https://github.com/rich-iannone/great-docs/issues"
 
 [project.scripts]

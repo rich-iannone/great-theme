@@ -717,6 +717,7 @@ class GreatDocs:
                 "class_method_names": {},
             }
             failed_introspection = []
+            cyclic_aliases = []
 
             # Skip common metadata variables
             skip_names = {"__version__", "__author__", "__email__", "__all__"}
@@ -736,6 +737,8 @@ class GreatDocs:
                     obj = pkg.members[name]
 
                     # Categorize based on griffe's kind
+                    # Note: Accessing obj.kind or obj.members on an Alias can trigger
+                    # resolution which may raise CyclicAliasError or AliasResolutionError
                     if obj.kind.value == "class":
                         categories["classes"].append(name)
                         # Get public methods (exclude private/magic methods)
@@ -754,11 +757,29 @@ class GreatDocs:
                         # Attributes, modules, etc.
                         categories["other"].append(name)
 
+                except griffe.CyclicAliasError:
+                    # Cyclic alias detected (e.g., re-exported symbol pointing to itself)
+                    # This can happen with complex re-export patterns
+                    print(f"  Warning: Cyclic alias detected for '{name}', categorizing as 'Other'")
+                    categories["other"].append(name)
+                    cyclic_aliases.append(name)
+                except griffe.AliasResolutionError:
+                    # Alias could not be resolved (target not found)
+                    print(
+                        f"  Warning: Could not resolve alias for '{name}', categorizing as 'Other'"
+                    )
+                    categories["other"].append(name)
+                    failed_introspection.append(name)
                 except Exception as e:
                     # If introspection fails for a specific object, still include it
                     print(f"  Warning: Could not introspect '{name}': {type(e).__name__}")
                     categories["other"].append(name)
                     failed_introspection.append(name)
+
+            if cyclic_aliases:
+                print(
+                    f"Note: Found {len(cyclic_aliases)} cyclic alias(es), categorizing as 'Other'"
+                )
 
             if failed_introspection:
                 print(

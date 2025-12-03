@@ -40,7 +40,8 @@ dev = [
     "pytest>=6.0",
     "pytest-cov>=3.0",
     "ruff>=0.9.9",
-    "mypy>=0.800",
+    "mypy>=1.0.0",
+    "pyright>=1.1.350",
     "build>=0.7",
     "twine>=3.4",
 ]
@@ -104,7 +105,7 @@ exclude_lines = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py311"
 
 [tool.ruff.lint]
 exclude = ["docs", ".venv", "tests/*", "build/*", "dist/*"]
@@ -134,6 +135,50 @@ line-ending = "auto"
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401", "E402"]
 "tests/*" = ["F401", "E402"]
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+include = ["great_docs"]
+exclude = [
+    "**/__pycache__",
+    "**/node_modules",
+    "**/.venv",
+    "**/build",
+    "**/dist",
+    "tests",
+    "docs",
+]
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnusedImport = true
+reportUnusedVariable = true
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+exclude = [
+    "tests/",
+    "docs/",
+    "build/",
+    "dist/",
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "yaml.*",
+    "griffe.*",
+    "quartodoc.*",
+]
+ignore_missing_imports = true
 
 # Great Docs configuration
 [tool.great-docs]

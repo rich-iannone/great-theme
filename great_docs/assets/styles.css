@@ -178,7 +178,7 @@ a.sidebar-item-text.sidebar-link.text-start > span {
     border-bottom-color: #E7EAF6;
 }
 
-.menu-text {
+#quarto-sidebar .sidebar-item .menu-text {
     font-size: 12px;
 }
 

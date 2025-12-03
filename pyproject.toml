@@ -182,7 +182,14 @@ ignore_missing_imports = true
 
 # Great Docs configuration
 [tool.great-docs]
-# Exclude items from auto-documentation
+# Discovery method: "dir" (default) uses static analysis to find public objects,
+# "all" uses __all__ from __init__.py
+# discovery_method = "dir"
+
+# Auto-excluded items (see docs for full list) can be force-included
+# include = ["main", "cli"]
+
+# Exclude additional items from auto-documentation
 # exclude = ["item_1", "item_2"]
 
 # Rich author metadata (optional); this augments the standard project.authors

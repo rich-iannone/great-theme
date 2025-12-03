@@ -124,8 +124,11 @@ great-docs init --project-path /path/to/project --docs-dir documentation
 # Force overwrite existing files
 great-docs init --force
 
-# Build documentation
+# Build documentation (re-discovers API and updates config)
 great-docs build
+
+# Build without refreshing API config (faster when API unchanged)
+great-docs build --no-refresh
 
 # Build and watch for changes
 great-docs build --watch
@@ -160,8 +163,11 @@ docs = GreatDocs()
 # Install docs files and configuration
 docs.install()
 
-# Build documentation
+# Build documentation (re-discovers API by default)
 docs.build()
+
+# Build without refreshing API config (faster rebuild)
+docs.build(refresh=False)
 
 # Build with watch mode
 docs.build(watch=True)

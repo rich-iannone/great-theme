@@ -134,10 +134,6 @@ class GreatDocs:
         docs = GreatDocs("/path/to/my/project")
         docs.install(force=True)
         ```
-
-        See Also
-        --------
-        uninstall : Remove great-docs assets and configuration
         """
         print("Installing great-docs to your quartodoc project...")
 

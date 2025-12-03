@@ -623,28 +623,51 @@ class GreatDocs:
                     )
 
             # Filter out cyclic aliases and unresolvable aliases
-            # These would cause quartodoc to fail when building documentation
             cyclic_aliases = []
             unresolvable_aliases = []
             safe_exports = []
 
+            # Try to use quartodoc's get_object for more accurate detection
+            quartodoc_get_object = None
+            try:
+                from functools import partial
+
+                from quartodoc import get_object as qd_get_object
+
+                # quartodoc uses parser="numpy" by default which affects alias resolution
+                quartodoc_get_object = partial(qd_get_object, dynamic=True, parser="numpy")
+            except ImportError:
+                pass
+
             for name in filtered:
                 try:
+                    # First check with basic griffe
                     obj = pkg.members[name]
-                    # Try to access properties that trigger alias resolution
-                    # quartodoc accesses both obj.kind and obj.members, so we need to
-                    # check both to ensure the export won't cause issues
                     _ = obj.kind
-                    # Also try to access members - this is what quartodoc does
-                    # and it can trigger CyclicAliasError even if kind doesn't
                     _ = obj.members
+
+                    # This catches cyclic aliases
+                    if quartodoc_get_object is not None:
+                        try:
+                            qd_obj = quartodoc_get_object(f"{normalized_name}:{name}")
+                            _ = qd_obj.members
+                        except griffe.CyclicAliasError:
+                            cyclic_aliases.append(name)
+                            continue
+                        except griffe.AliasResolutionError:
+                            unresolvable_aliases.append(name)
+                            continue
+                        except Exception:
+                            # Other errors (like ModuleNotFoundError) are OK; just use griffe result
+                            pass
+
                     safe_exports.append(name)
                 except griffe.CyclicAliasError:
                     cyclic_aliases.append(name)
                 except griffe.AliasResolutionError:
                     unresolvable_aliases.append(name)
                 except Exception:
-                    # If we can't determine, include it and let quartodoc handle it
+                    # If we can't determine, include it
                     safe_exports.append(name)
 
             if cyclic_aliases:

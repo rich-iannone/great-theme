@@ -622,12 +622,16 @@ class GreatDocs:
                         f"{', '.join(sorted(overridden))}"
                     )
 
-            # Filter out cyclic aliases and unresolvable aliases
-            cyclic_aliases = []
-            unresolvable_aliases = []
+            # Super-safe filtering: try each object with quartodoc's get_object
+            # If it fails for ANY reason, exclude it - this catches:
+            # - Cyclic aliases
+            # - Unresolvable aliases
+            # - Rust/PyO3 objects (KeyError)
+            # - Any other edge case that would crash quartodoc build
             safe_exports = []
+            failed_exports = {}  # name -> error type for reporting
 
-            # Try to use quartodoc's get_object for more accurate detection
+            # Try to use quartodoc's get_object for validation
             quartodoc_get_object = None
             try:
                 from functools import partial
@@ -640,47 +644,45 @@ class GreatDocs:
                 pass
 
             for name in filtered:
-                try:
-                    # First check with basic griffe
-                    obj = pkg.members[name]
-                    _ = obj.kind
-                    _ = obj.members
+                if quartodoc_get_object is not None:
+                    try:
+                        # Try to load the object exactly as quartodoc would
+                        qd_obj = quartodoc_get_object(f"{normalized_name}:{name}")
+                        # Try to access members to trigger any lazy resolution errors
+                        _ = qd_obj.members
+                        _ = qd_obj.kind
+                        safe_exports.append(name)
+                    except griffe.CyclicAliasError:
+                        failed_exports[name] = "cyclic alias"
+                    except griffe.AliasResolutionError:
+                        failed_exports[name] = "unresolvable alias"
+                    except KeyError:
+                        failed_exports[name] = "not found (likely Rust/PyO3)"
+                    except Exception as e:
+                        # Catch-all for any other error that would crash quartodoc
+                        failed_exports[name] = f"{type(e).__name__}"
+                else:
+                    # Fallback: use basic griffe check if quartodoc not available
+                    try:
+                        obj = pkg.members[name]
+                        _ = obj.kind
+                        _ = obj.members
+                        safe_exports.append(name)
+                    except Exception as e:
+                        failed_exports[name] = f"{type(e).__name__}"
 
-                    # This catches cyclic aliases
-                    if quartodoc_get_object is not None:
-                        try:
-                            qd_obj = quartodoc_get_object(f"{normalized_name}:{name}")
-                            _ = qd_obj.members
-                        except griffe.CyclicAliasError:
-                            cyclic_aliases.append(name)
-                            continue
-                        except griffe.AliasResolutionError:
-                            unresolvable_aliases.append(name)
-                            continue
-                        except Exception:
-                            # Other errors (like ModuleNotFoundError) are OK; just use griffe result
-                            pass
+            # Report excluded items grouped by error type
+            if failed_exports:
+                # Group by error type for cleaner output
+                by_error = {}
+                for name, error in failed_exports.items():
+                    by_error.setdefault(error, []).append(name)
 
-                    safe_exports.append(name)
-                except griffe.CyclicAliasError:
-                    cyclic_aliases.append(name)
-                except griffe.AliasResolutionError:
-                    unresolvable_aliases.append(name)
-                except Exception:
-                    # If we can't determine, include it
-                    safe_exports.append(name)
-
-            if cyclic_aliases:
-                print(
-                    f"Excluding {len(cyclic_aliases)} cyclic alias(es) that would break quartodoc: "
-                    f"{', '.join(sorted(cyclic_aliases))}"
-                )
-
-            if unresolvable_aliases:
-                print(
-                    f"Excluding {len(unresolvable_aliases)} unresolvable alias(es): "
-                    f"{', '.join(sorted(unresolvable_aliases))}"
-                )
+                for error_type, names in sorted(by_error.items()):
+                    print(
+                        f"Excluding {len(names)} object(s) ({error_type}): "
+                        f"{', '.join(sorted(names))}"
+                    )
 
             return safe_exports
 

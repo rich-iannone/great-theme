@@ -56,8 +56,8 @@ A comprehensive documentation site generator for Python packages. Great Docs aut
 - modern styling: clean, professional appearance
 - mobile responsive: optimized for all device sizes
 - streamlined workflow: single `great-docs build` command handles everything
-- intelligent setup: auto-generates configuration from your package's `__all__`
-- safe introspection: works with packages containing non-Python components
+- intelligent setup: auto-generates configuration from your package's public API
+- safe introspection: uses static analysis by default, with `__all__` as an option
 - zero configuration: works out of the box with sensible defaults
 
 ### Quick Start
@@ -121,7 +121,7 @@ The installer will:
 4. install all necessary files to the detected or chosen directory
 5. auto-create `index.qmd` from your `README.md`
 6. auto-detect your package name from `pyproject.toml`, `setup.py`, or directory structure
-7. auto-generate API sections by parsing `__all__` from your package's `__init__.py`
+7. auto-generate API sections by discovering public objects in your package
 8. add website navigation with Home and API Reference links in the navbar
 
 This up-and-running site sets you up for success with your documentation dreams.
@@ -251,7 +251,7 @@ The installer intelligently configures your documentation site:
    - `pyproject.toml`
    - `setup.py`
    - Package directory structure
-3. **Auto-generated API sections**: Parses your package's `__init__.py` to read `__all__` and automatically creates organized sections for:
+3. **Auto-generated API sections**: Discovers your package's public API and automatically creates organized sections for:
    - Classes
    - Functions
    - Other exports
@@ -266,7 +266,7 @@ The installer intelligently configures your documentation site:
      renderer:
        style: markdown
        table_style: description-list
-     sections: # Auto-generated from __all__
+     sections: # Auto-generated from package exports
        - title: Classes
          desc: Core classes and types
          contents:
@@ -278,14 +278,41 @@ The installer intelligently configures your documentation site:
            - your_function
    ```
 
-**Requirements for auto-generation**:
+**API Discovery Methods**:
 
-- Your package must have `__all__` defined in `__init__.py`
-- Names in `__all__` should be importable from the package
+By default, Great Docs uses static analysis (via griffe) to discover public objects in your package. This safely finds all non-private names (those not starting with an underscore) without importing your package or requiring `__all__` to be defined.
 
-**Filtering non-documentable items**:
+Alternatively, you can use the traditional `__all__`-based discovery by setting the `discovery_method` option:
 
-If your package includes items that can't be auto-documented, you can exclude them in your `pyproject.toml`:
+```toml
+## In your pyproject.toml
+[tool.great-docs]
+discovery_method = "all"  # Use __all__ instead of static analysis for discovery
+```
+
+**Auto-excluded objects**:
+
+When using the default discovery method, Great Docs automatically excludes common internal/utility names that most packages don't want in their documentation:
+
+| Category          | Names                                                            |
+| ----------------- | ---------------------------------------------------------------- |
+| CLI/Entry points  | `main`, `cli`                                                    |
+| Version/Metadata  | `version`, `VERSION`, `VERSION_INFO`                             |
+| Module re-exports | `core`, `utils`, `helpers`, `constants`, `config`, `settings`    |
+| Standard library  | `PackageNotFoundError`, `typing`, `annotations`, `TYPE_CHECKING` |
+| Logging           | `logger`, `log`, `logging`                                       |
+
+To force-include any auto-excluded items, use the `include` option:
+
+```toml
+## In your pyproject.toml
+[tool.great-docs]
+include = ["main", "cli"]  # Force-include auto-excluded items
+```
+
+**Filtering objects from documentation**:
+
+If your package includes additional items that shouldn't be documented, you can exclude them in your `pyproject.toml`:
 
 ```toml
 ## In your pyproject.toml
@@ -302,7 +329,7 @@ Great Docs will search for your package in standard locations including:
 - `src/` directory
 - `lib/` directory
 
-If `__all__` is not found, Great Docs will create a basic configuration and you can manually add sections.
+If discovery fails (e.g., the package cannot be loaded), Great Docs will create a basic configuration and you can manually add sections.
 
 #### Smart Method Splitting
 

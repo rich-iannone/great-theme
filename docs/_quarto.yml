@@ -30,9 +30,6 @@ website:
     - section: Classes
       contents:
       - reference/GreatDocs.qmd
-    - section: Functions
-      contents:
-      - reference/main.qmd
 quartodoc:
   package: great_docs
   dir: reference
@@ -47,7 +44,3 @@ quartodoc:
     desc: Core classes and types
     contents:
     - GreatDocs
-  - title: Functions
-    desc: Public functions
-    contents:
-    - main

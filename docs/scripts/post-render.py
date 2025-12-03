@@ -231,6 +231,11 @@ for html_file in html_files:
     main_end_pattern = r"</main>"
     main_end_replacement = '</main>\n<hr style="padding: 0; margin: 0;">\n'
     content_str = re.sub(main_end_pattern, main_end_replacement, content_str)
+
+    # Remove breadcrumb navigation (redundant with sidebar)
+    breadcrumb_pattern = r'<nav class="quarto-page-breadcrumbs[^"]*"[^>]*>.*?</nav>'
+    content_str = re.sub(breadcrumb_pattern, "", content_str, flags=re.DOTALL)
+
     content = content_str.splitlines(keepends=True)
 
     with open(html_file, "w") as file:

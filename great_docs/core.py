@@ -1174,6 +1174,19 @@ title: "Code of Conduct"
         # Build margin content
         margin_content = "\n".join(margin_sections) if margin_sections else ""
 
+        # CSS to reduce top margin of first heading element
+        # The heading ends up inside a section.level1 > h1 structure
+        first_heading_style = """<style>
+section.level1:first-of-type > h1:first-child,
+section.level2:first-of-type > h2:first-child,
+.column-body-outset-right > section.level1:first-of-type > h1,
+#quarto-document-content > section:first-of-type > h1 {
+  margin-top: 4px !important;
+}
+</style>
+
+"""
+
         # Create a qmd file with the README content
         # Use empty title so "Home" doesn't appear on landing page
         # Add margin content in a special div that Quarto will place in the margin
@@ -1183,7 +1196,7 @@ title: ""
 toc: false
 ---
 
-::: {{.column-margin}}
+{first_heading_style}::: {{.column-margin}}
 {margin_content}
 :::
 
@@ -1195,7 +1208,7 @@ title: ""
 toc: false
 ---
 
-{readme_content}
+{first_heading_style}{readme_content}
 """
 
         with open(index_qmd, "w", encoding="utf-8") as f:

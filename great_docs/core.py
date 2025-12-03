@@ -1596,6 +1596,59 @@ toc: false
         if not sections:
             print("See: https://machow.github.io/quartodoc/get-started/overview.html")
 
+    def _refresh_quartodoc_config(self) -> None:
+        """
+        Refresh the quartodoc sections in _quarto.yml based on current package exports.
+
+        This method re-discovers the package API and updates the quartodoc sections
+        without touching other configuration. Use this when your package API has changed
+        (new classes, methods, or functions added/removed).
+
+        The method preserves:
+        - Package name and other quartodoc settings
+        - All non-quartodoc configuration in _quarto.yml
+
+        Only the 'sections' key in quartodoc config is regenerated.
+        """
+        quarto_yml = self.project_path / "_quarto.yml"
+
+        if not quarto_yml.exists():
+            print("Error: _quarto.yml not found. Run 'great-docs init' first.")
+            return
+
+        with open(quarto_yml, "r") as f:
+            config = yaml.safe_load(f) or {}
+
+        if "quartodoc" not in config:
+            print("Error: No quartodoc configuration found. Run 'great-docs init' first.")
+            return
+
+        # Get the package name from existing config
+        package_name = config["quartodoc"].get("package")
+        if not package_name:
+            print("Error: No package name in quartodoc config.")
+            return
+
+        print(f"Re-discovering exports for package: {package_name}")
+
+        # Re-generate sections from current package exports
+        sections = self._create_quartodoc_sections(package_name)
+
+        if sections:
+            config["quartodoc"]["sections"] = sections
+            print(f"Updated quartodoc config with {len(sections)} section(s)")
+
+            # Also update the sidebar to match the new sections
+            self._update_sidebar_from_sections()
+
+            # Write back to file
+            with open(quarto_yml, "w") as f:
+                yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+
+            print(f"✅ Refreshed quartodoc configuration in {quarto_yml}")
+        else:
+            print("Warning: Could not discover package exports. Config unchanged.")
+
     def _update_quarto_config(self) -> None:
         """
         Update _quarto.yml with great-docs configuration.
@@ -1894,20 +1947,25 @@ toc: false
 
         print(f"Cleaned great-docs configuration from {quarto_yml}")
 
-    def build(self, watch: bool = False) -> None:
+    def build(self, watch: bool = False, refresh: bool = True) -> None:
         """
         Build the documentation site.
 
-        Runs quartodoc build followed by quarto render.
+        Runs quartodoc build followed by quarto render. By default, re-discovers
+        package exports and updates the quartodoc configuration before building.
 
         Parameters
         ----------
         watch
             If True, watch for changes and rebuild automatically.
+        refresh
+            If True (default), re-discover package exports and update quartodoc
+            config before building. Set to False for faster rebuilds when your
+            package API hasn't changed.
 
         Examples
         --------
-        Build the documentation:
+        Build the documentation (with API refresh):
 
         ```python
         from great_docs import GreatDocs
@@ -1920,6 +1978,12 @@ toc: false
 
         ```python
         docs.build(watch=True)
+        ```
+
+        Quick rebuild without API refresh:
+
+        ```python
+        docs.build(refresh=False)
         ```
         """
         import subprocess
@@ -1947,6 +2011,11 @@ toc: false
             # Step 0: Rebuild index.qmd from source file (README.md, index.md, or index.qmd)
             print("\n📄 Step 0: Syncing landing page with source file...")
             self._create_index_from_readme(force_rebuild=True)
+
+            # Step 0.5: Refresh quartodoc config if requested
+            if refresh:
+                print("\n🔄 Refreshing quartodoc configuration...")
+                self._refresh_quartodoc_config()
 
             # Step 1: Run quartodoc build using Python module execution
             # This ensures it uses the same Python environment as great-docs

@@ -62,11 +62,16 @@ def init(project_path, docs_dir, force):
     is_flag=True,
     help="Watch for changes and rebuild automatically",
 )
-def build(project_path, docs_dir, watch):
+@click.option(
+    "--no-refresh",
+    is_flag=True,
+    help="Skip re-discovering package exports (faster rebuild when API unchanged)",
+)
+def build(project_path, docs_dir, watch, no_refresh):
     """Build documentation (runs quartodoc build + quarto render)."""
     try:
         docs = GreatDocs(project_path=project_path, docs_dir=docs_dir)
-        docs.build(watch=watch)
+        docs.build(watch=watch, refresh=not no_refresh)
     except KeyboardInterrupt:
         click.echo("\n👋 Stopped watching")
     except Exception as e:

@@ -622,7 +622,40 @@ class GreatDocs:
                         f"{', '.join(sorted(overridden))}"
                     )
 
-            return filtered
+            # Filter out cyclic aliases and unresolvable aliases
+            # These would cause quartodoc to fail when building documentation
+            cyclic_aliases = []
+            unresolvable_aliases = []
+            safe_exports = []
+
+            for name in filtered:
+                try:
+                    obj = pkg.members[name]
+                    # Try to access properties that trigger alias resolution
+                    # This will raise CyclicAliasError or AliasResolutionError if problematic
+                    _ = obj.kind
+                    safe_exports.append(name)
+                except griffe.CyclicAliasError:
+                    cyclic_aliases.append(name)
+                except griffe.AliasResolutionError:
+                    unresolvable_aliases.append(name)
+                except Exception:
+                    # If we can't determine, include it and let quartodoc handle it
+                    safe_exports.append(name)
+
+            if cyclic_aliases:
+                print(
+                    f"Excluding {len(cyclic_aliases)} cyclic alias(es) that would break quartodoc: "
+                    f"{', '.join(sorted(cyclic_aliases))}"
+                )
+
+            if unresolvable_aliases:
+                print(
+                    f"Excluding {len(unresolvable_aliases)} unresolvable alias(es): "
+                    f"{', '.join(sorted(unresolvable_aliases))}"
+                )
+
+            return safe_exports
 
         except ImportError:
             print("Warning: griffe not available, cannot use dir() discovery")

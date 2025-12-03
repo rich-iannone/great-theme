@@ -1888,14 +1888,23 @@ toc: false
         if not package_name or not sections:
             return
 
-        # Get package metadata for description
+        # Get package metadata for description and site URL
         metadata = self._get_package_metadata()
         description = metadata.get("description", "")
 
-        # Get the site URL from config if available
-        site_url = config.get("website", {}).get("site-url", "")
-        if site_url and not site_url.endswith("/"):
-            site_url += "/"
+        # Get the site URL - prefer Documentation URL from pyproject.toml,
+        # fall back to site-url from _quarto.yml
+        urls = metadata.get("urls", {})
+        site_url = urls.get("Documentation", "") or config.get("website", {}).get("site-url", "")
+
+        # Clean up site URL - remove any trailing anchors or paths that aren't the base
+        if site_url:
+            # Remove trailing #readme or similar anchors
+            if "#" in site_url:
+                site_url = site_url.split("#")[0]
+            # Ensure trailing slash
+            if not site_url.endswith("/"):
+                site_url += "/"
 
         # Build the llms.txt content
         lines = []

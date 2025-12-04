@@ -1,9 +1,20 @@
 import os
+import re
 import shutil
 from importlib import resources
 from pathlib import Path
+from typing import TypedDict
 
 import yaml
+
+
+class SourceLocation(TypedDict, total=False):
+    """Type for source location information."""
+
+    file: str
+    start_line: int
+    end_line: int
+    github_url: str | None
 
 
 class GreatDocs:
@@ -357,10 +368,307 @@ class GreatDocs:
                 # Discovery method: "dir" (default) or "all" (use __all__)
                 metadata["discovery_method"] = tool_config.get("discovery_method", "dir")
 
+                # Source link configuration
+                source_config = tool_config.get("source", {})
+                metadata["source_link_enabled"] = source_config.get("enabled", True)
+                metadata["source_link_branch"] = source_config.get("branch", None)
+                metadata["source_link_path"] = source_config.get("path", None)
+                metadata["source_link_placement"] = source_config.get("placement", "usage")
+
         except Exception:
             pass
 
         return metadata
+
+    def _get_github_repo_info(self) -> tuple[str | None, str | None, str | None]:
+        """
+        Extract GitHub repository information from pyproject.toml.
+
+        Returns
+        -------
+        tuple[str | None, str | None, str | None]
+            A tuple of (owner, repo_name, base_url) or (None, None, None) if not found.
+        """
+        metadata = self._get_package_metadata()
+        urls = metadata.get("urls", {})
+
+        # Look for repository URL in various common key names
+        repo_url = None
+        for key in ["Repository", "repository", "Source", "source", "GitHub", "github"]:
+            if key in urls:
+                repo_url = urls[key]
+                break
+
+        if not repo_url or "github.com" not in repo_url:
+            return None, None, None
+
+        # Parse the GitHub URL to extract owner and repo
+        # Handles formats like:
+        # - https://github.com/owner/repo
+        # - https://github.com/owner/repo.git
+        # - git@github.com:owner/repo.git
+        github_pattern = r"github\.com[/:]([^/]+)/([^/\s.]+)"
+        match = re.search(github_pattern, repo_url)
+
+        if match:
+            owner = match.group(1)
+            repo = match.group(2).rstrip(".git")
+            base_url = f"https://github.com/{owner}/{repo}"
+            return owner, repo, base_url
+
+        return None, None, None
+
+    def _get_source_location(self, package_name: str, item_name: str) -> SourceLocation | None:
+        """
+        Get source file and line numbers for a class, method, or function.
+
+        Uses griffe for static analysis to avoid import side effects.
+
+        Parameters
+        ----------
+        package_name
+            The name of the package containing the item.
+        item_name
+            The fully qualified name of the item (e.g., "ClassName" or "ClassName.method_name").
+
+        Returns
+        -------
+        SourceLocation | None
+            Dictionary with file path and line numbers, or None if not found.
+        """
+        try:
+            import griffe
+
+            normalized_name = package_name.replace("-", "_")
+
+            # Load the package with griffe
+            try:
+                pkg = griffe.load(normalized_name)
+            except Exception:
+                return None
+
+            # Navigate to the item (handle dotted names like "ClassName.method")
+            parts = item_name.split(".")
+            obj = pkg
+
+            for part in parts:
+                if part not in obj.members:
+                    return None
+                obj = obj.members[part]
+
+            # Get source information
+            if not hasattr(obj, "lineno") or obj.lineno is None:
+                return None
+
+            # Get the file path relative to package root
+            if hasattr(obj, "filepath") and obj.filepath:
+                filepath = str(obj.filepath)
+            else:
+                return None
+
+            # Get end line number
+            end_lineno = getattr(obj, "endlineno", obj.lineno)
+
+            return SourceLocation(
+                file=filepath,
+                start_line=obj.lineno,
+                end_line=end_lineno or obj.lineno,
+            )
+
+        except ImportError:
+            return None
+        except Exception:
+            return None
+
+    def _build_github_source_url(
+        self, source_location: SourceLocation, branch: str | None = None
+    ) -> str | None:
+        """
+        Build a GitHub URL for viewing source code at specific line numbers.
+
+        Parameters
+        ----------
+        source_location
+            Dictionary with file path and line numbers.
+        branch
+            Git branch/tag to link to. If None, attempts to detect from git
+            or falls back to 'main'.
+
+        Returns
+        -------
+        str | None
+            Full GitHub URL with line anchors, or None if repo info not available.
+        """
+        owner, repo, base_url = self._get_github_repo_info()
+
+        if not base_url:
+            return None
+
+        # Determine the branch/ref to use
+        if branch is None:
+            branch = self._detect_git_ref()
+
+        # Get the file path relative to the repository root
+        filepath = source_location.get("file", "")
+        package_root = self._find_package_root()
+
+        # Handle source path configuration for monorepos
+        metadata = self._get_package_metadata()
+        source_path = metadata.get("source_link_path")
+
+        if source_path:
+            # Custom source path specified (for monorepos)
+            relative_path = f"{source_path}/{Path(filepath).name}"
+        else:
+            # Try to make the path relative to package root
+            try:
+                filepath_obj = Path(filepath)
+                if filepath_obj.is_absolute():
+                    relative_path = str(filepath_obj.relative_to(package_root))
+                else:
+                    relative_path = filepath
+            except ValueError:
+                # Path is not relative to package root, use as-is
+                relative_path = filepath
+
+        # Build the URL with line number anchors
+        start_line = source_location.get("start_line", 1)
+        end_line = source_location.get("end_line", start_line)
+
+        url = f"{base_url}/blob/{branch}/{relative_path}"
+
+        if start_line == end_line:
+            url += f"#L{start_line}"
+        else:
+            url += f"#L{start_line}-L{end_line}"
+
+        return url
+
+    def _detect_git_ref(self) -> str:
+        """
+        Detect the current git branch or tag.
+
+        Returns
+        -------
+        str
+            The current branch/tag name, or 'main' as fallback.
+        """
+        import subprocess
+
+        package_root = self._find_package_root()
+
+        # First check if there's a configured branch in metadata
+        metadata = self._get_package_metadata()
+        configured_branch = metadata.get("source_link_branch")
+        if configured_branch:
+            return configured_branch
+
+        try:
+            # Try to get the current tag first (for versioned docs)
+            result = subprocess.run(
+                ["git", "describe", "--tags", "--exact-match"],
+                cwd=package_root,
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode == 0:
+                return result.stdout.strip()
+
+            # Fall back to branch name
+            result = subprocess.run(
+                ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+                cwd=package_root,
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode == 0:
+                branch = result.stdout.strip()
+                if branch != "HEAD":
+                    return branch
+
+        except Exception:
+            pass
+
+        # Default fallback
+        return "main"
+
+    def _generate_source_links_json(self, package_name: str) -> None:
+        """
+        Generate a JSON file mapping object names to their GitHub source URLs.
+
+        This file is used by the post-render script to inject source links
+        into the HTML documentation.
+
+        Parameters
+        ----------
+        package_name
+            The name of the package to generate source links for.
+        """
+        import json
+
+        metadata = self._get_package_metadata()
+
+        # Check if source links are enabled
+        if not metadata.get("source_link_enabled", True):
+            print("Source links disabled in configuration")
+            return
+
+        # Check if we have GitHub repo info
+        owner, repo, base_url = self._get_github_repo_info()
+        if not base_url:
+            print("No GitHub repository URL found, skipping source links")
+            return
+
+        print(f"Generating source links for {package_name}...")
+
+        source_links: dict[str, dict] = {}
+        normalized_name = package_name.replace("-", "_")
+
+        # Get all exports
+        exports = self._get_package_exports(package_name)
+        if not exports:
+            return
+
+        # Get branch for source links
+        branch = self._detect_git_ref()
+        print(f"Using git ref: {branch}")
+
+        # Generate source links for each export
+        for item_name in exports:
+            source_loc = self._get_source_location(normalized_name, item_name)
+            if source_loc:
+                github_url = self._build_github_source_url(source_loc, branch)
+                if github_url:
+                    source_links[item_name] = {
+                        "url": github_url,
+                        "file": source_loc.get("file", ""),
+                        "start_line": source_loc.get("start_line", 0),
+                        "end_line": source_loc.get("end_line", 0),
+                    }
+
+            # Also get source links for methods of classes
+            categories = self._categorize_api_objects(package_name, [item_name])
+            if item_name in categories.get("classes", []):
+                method_names = categories.get("class_method_names", {}).get(item_name, [])
+                for method_name in method_names:
+                    full_name = f"{item_name}.{method_name}"
+                    method_loc = self._get_source_location(normalized_name, full_name)
+                    if method_loc:
+                        method_url = self._build_github_source_url(method_loc, branch)
+                        if method_url:
+                            source_links[full_name] = {
+                                "url": method_url,
+                                "file": method_loc.get("file", ""),
+                                "start_line": method_loc.get("start_line", 0),
+                                "end_line": method_loc.get("end_line", 0),
+                            }
+
+        # Write to JSON file in the docs directory
+        source_links_path = self.project_path / "_source_links.json"
+        with open(source_links_path, "w", encoding="utf-8") as f:
+            json.dump(source_links, f, indent=2)
+
+        print(f"Generated source links for {len(source_links)} items")
 
     def _find_package_init(self, package_name: str) -> Path | None:
         """
@@ -2184,6 +2492,12 @@ toc: false
             # Step 0.6: Generate llms.txt file
             print("\n📝 Generating llms.txt...")
             self._generate_llms_txt()
+
+            # Step 0.7: Generate source links JSON
+            print("\n🔗 Generating source links...")
+            package_name = self._detect_package_name()
+            if package_name:
+                self._generate_source_links_json(package_name)
 
             # Step 1: Run quartodoc build using Python module execution
             # This ensures it uses the same Python environment as great-docs

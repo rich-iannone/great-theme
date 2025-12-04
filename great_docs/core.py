@@ -2071,6 +2071,25 @@ toc: false
                 }
             ]
 
+        # Add page footer with copyright notice if not present
+        if "page-footer" not in config["website"]:
+            import datetime
+
+            current_year = datetime.datetime.now().year
+            metadata = self._get_package_metadata()
+
+            # Get author name from metadata
+            author_name = None
+            if metadata.get("authors"):
+                first_author = metadata["authors"][0]
+                if isinstance(first_author, dict):
+                    author_name = first_author.get("name")
+                elif isinstance(first_author, str):
+                    author_name = first_author
+
+            if author_name:
+                config["website"]["page-footer"] = {"left": f"&copy; {current_year} {author_name}"}
+
         # Write back to file
         with open(quarto_yml, "w") as f:
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)

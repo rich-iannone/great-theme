@@ -203,7 +203,7 @@ for html_file in html_files:
         if "style=" not in first_p_content:
             styled_p = first_p_content.replace(
                 "<p>",
-                '<p style="font-size: 1rem; font-style: italic; margin-top: -10px; line-height: 1;">',
+                '<p class="doc-description" style="font-size: 1rem; font-style: italic; margin-top: 0.25rem; line-height: 1.3;">',
             )
         else:
             styled_p = first_p_content

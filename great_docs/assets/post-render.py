@@ -42,6 +42,8 @@ def format_signature_multiline(html_content):
             arg1=default1,
             arg2=default2,
         )
+
+    Signatures that are already multiline (from quartodoc) are skipped.
     """
     # Pattern to match the content inside signature spans
     # The signature is inside <span id="cbN-1">...(args)</span>
@@ -53,6 +55,11 @@ def format_signature_multiline(html_content):
         anchor = match.group(2) or ""
         content = match.group(3)
         span_end = match.group(4)
+
+        # Skip if signature is already multiline (quartodoc formatted it)
+        # This is detected by checking if content ends with just "(" or has a newline
+        if content.strip().endswith("(") or "\n" in content:
+            return full_match
 
         # Find the opening paren position
         paren_pos = content.find("(")

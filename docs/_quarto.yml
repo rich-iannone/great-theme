@@ -30,6 +30,8 @@ website:
     - section: Classes
       contents:
       - reference/GreatDocs.qmd
+  page-footer:
+    left: '&copy; 2025 Rich Iannone'
 quartodoc:
   package: great_docs
   dir: reference

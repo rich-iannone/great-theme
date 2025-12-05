@@ -1132,7 +1132,8 @@ class GreatDocs:
                         # Get public methods (exclude private/magic methods)
                         # We need to handle each member individually to catch cyclic aliases
                         # AND validate each method with quartodoc to catch type hint issues
-                        method_names = []
+                        # Collect (method_name, lineno) tuples to preserve source order
+                        method_entries = []
                         skipped_methods = []
                         try:
                             for member_name, member in obj.members.items():
@@ -1141,6 +1142,8 @@ class GreatDocs:
                                 try:
                                     # Accessing member.kind can trigger alias resolution
                                     if member.kind.value in ("function", "method"):
+                                        # Get line number for source ordering
+                                        lineno = getattr(member, "lineno", float("inf"))
                                         # Validate with quartodoc if available
                                         if quartodoc_get_object is not None:
                                             try:
@@ -1150,12 +1153,12 @@ class GreatDocs:
                                                 # Try to access properties that might fail
                                                 _ = qd_obj.members
                                                 _ = qd_obj.kind
-                                                method_names.append(member_name)
+                                                method_entries.append((member_name, lineno))
                                             except Exception:
                                                 # Method can't be documented by quartodoc
                                                 skipped_methods.append(member_name)
                                         else:
-                                            method_names.append(member_name)
+                                            method_entries.append((member_name, lineno))
                                 except (
                                     griffe.CyclicAliasError,
                                     griffe.AliasResolutionError,
@@ -1169,6 +1172,10 @@ class GreatDocs:
                             # If we can't even iterate members, class has issues
                             skipped_methods.append("<members>")
 
+                        # Sort by line number to preserve source file order
+                        method_entries.sort(key=lambda x: x[1])
+                        method_names = [entry[0] for entry in method_entries]
+
                         if skipped_methods:
                             print(
                                 f"  {name}: class with {len(method_names)} public methods "
@@ -1179,7 +1186,7 @@ class GreatDocs:
                             print(f"  {name}: class with {len(method_names)} public methods")
 
                         categories["class_methods"][name] = len(method_names)
-                        categories["class_method_names"][name] = sorted(method_names)
+                        categories["class_method_names"][name] = method_names
                     elif obj.kind.value == "function":
                         categories["functions"].append(name)
                     else:

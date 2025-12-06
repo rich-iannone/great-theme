@@ -152,29 +152,39 @@ def format_signature_multiline(html_content):
 
 def strip_directives_from_html(html_content):
     """
-    Remove Great Docs @directive: lines from rendered HTML.
+    Remove Great Docs %directive lines from rendered HTML.
 
-    Directives like @family:, @order:, @seealso:, and @nodoc: are used for
+    Directives like %family, %order, %seealso, and %nodoc are used for
     organizing documentation but should not appear in the final rendered output.
     This function removes them as a safety net after quartodoc rendering.
     """
-    # Pattern matches directive lines that may appear in HTML
-    # They could be plain text, inside <p> tags, or other HTML elements
-    # Match: optional whitespace, @directive:, value, end of line
-    directive_pattern = re.compile(
-        r"^\s*@(?:family|order|seealso|nodoc):\s*.*$\n?",
-        re.MULTILINE | re.IGNORECASE,
-    )
-
-    # Also match directives that got wrapped in <p> tags
-    # e.g., <p>@family: Something</p>
+    # Match directives wrapped in <p> tags
+    # e.g., <p>%family Something</p>
     p_directive_pattern = re.compile(
-        r"<p>\s*@(?:family|order|seealso|nodoc):\s*[^<]*</p>\s*\n?",
+        r"<p>\s*%(?:family|order|seealso|nodoc)(?:\s+[^<]*)?\s*</p>\s*\n?",
         re.IGNORECASE,
     )
 
-    cleaned = directive_pattern.sub("", html_content)
-    cleaned = p_directive_pattern.sub("", cleaned)
+    # Match standalone directive lines (plain text)
+    # e.g., %family Something
+    standalone_directive_pattern = re.compile(
+        r"^\s*%(?:family|order|seealso|nodoc)(?:\s+.*)?\s*$\n?",
+        re.MULTILINE | re.IGNORECASE,
+    )
+
+    # Match directives that might be inline within text
+    inline_directive_pattern = re.compile(
+        r"%(?:family|order|seealso|nodoc)(?:\s+[^\n<]*)?",
+        re.IGNORECASE,
+    )
+
+    # Apply patterns in order of specificity
+    cleaned = p_directive_pattern.sub("", html_content)
+    cleaned = standalone_directive_pattern.sub("", cleaned)
+    cleaned = inline_directive_pattern.sub("", cleaned)
+
+    # Clean up any resulting empty paragraphs
+    cleaned = re.sub(r"<p>\s*</p>\s*\n?", "", cleaned)
 
     return cleaned
 

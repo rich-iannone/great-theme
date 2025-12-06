@@ -145,13 +145,13 @@ cli.add_command(uninstall)
     "--verbose",
     "-v",
     is_flag=True,
-    help="Show detailed information including @seealso and @order values",
+    help="Show detailed information including %seealso and %order values",
 )
 def scan(project_path, docs_dir, verbose):
-    """Scan docstrings for @family directives and preview API organization.
+    """Scan docstrings for %family directives and preview API organization.
 
-    This command analyzes your package's docstrings to find @family, @order,
-    @seealso, and @nodoc directives, then shows how the API reference would
+    This command analyzes your package's docstrings to find %family, %order,
+    %seealso, and %nodoc directives, then shows how the API reference would
     be organized.
 
     Use this to preview your documentation structure before building.
@@ -173,11 +173,11 @@ def scan(project_path, docs_dir, verbose):
         directive_map = docs._extract_all_directives(importable_name)
 
         if not directive_map:
-            click.echo("No @family directives found in docstrings.")
+            click.echo("No %family directives found in docstrings.")
             click.echo("\nTo organize your API documentation, add directives to your docstrings:")
-            click.echo("    @family: Family Name")
-            click.echo("    @order: 1")
-            click.echo("    @seealso: other_func, AnotherClass")
+            click.echo("    %family Family Name")
+            click.echo("    %order 1")
+            click.echo("    %seealso other_func, AnotherClass")
             sys.exit(0)
 
         # Group by family
@@ -216,16 +216,16 @@ def scan(project_path, docs_dir, verbose):
 
                 click.echo(f"\n  {family_name} ({len(items)} item(s)):")
                 for item in items:
-                    order_str = f" [@order: {item['order']}]" if item["order"] is not None else ""
+                    order_str = f" [%order {item['order']}]" if item["order"] is not None else ""
                     click.echo(f"    • {item['name']}{order_str}")
 
                     if verbose and item["seealso"]:
                         seealso_str = ", ".join(item["seealso"])
-                        click.echo(f"      └─ @seealso: {seealso_str}")
+                        click.echo(f"      └─ %seealso {seealso_str}")
 
         # Show nodoc items
         if nodoc_items:
-            click.echo(f"\n🚫 Excluded (@nodoc): {len(nodoc_items)} item(s)")
+            click.echo(f"\n🚫 Excluded (%nodoc): {len(nodoc_items)} item(s)")
             if verbose:
                 for item in sorted(nodoc_items):
                     click.echo(f"    • {item}")

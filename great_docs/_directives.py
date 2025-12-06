@@ -31,18 +31,18 @@ class DocDirectives:
         return bool(self.family or self.order is not None or self.seealso or self.nodoc)
 
 
-# Single-line directive patterns (with @ prefix)
+# Single-line directive patterns (with % prefix, no colon)
 # Each pattern matches a complete line starting with the directive
 DIRECTIVE_PATTERNS = {
-    "family": re.compile(r"^\s*@family:\s*(.+?)\s*$", re.MULTILINE),
-    "order": re.compile(r"^\s*@order:\s*(\d+)\s*$", re.MULTILINE),
-    "seealso": re.compile(r"^\s*@seealso:\s*(.+?)\s*$", re.MULTILINE),
-    "nodoc": re.compile(r"^\s*@nodoc:\s*(true|yes|1)?\s*$", re.MULTILINE | re.IGNORECASE),
+    "family": re.compile(r"^\s*%family\s+(.+?)\s*$", re.MULTILINE),
+    "order": re.compile(r"^\s*%order\s+(\d+)\s*$", re.MULTILINE),
+    "seealso": re.compile(r"^\s*%seealso\s+(.+?)\s*$", re.MULTILINE),
+    "nodoc": re.compile(r"^\s*%nodoc(?:\s+(true|yes|1))?\s*$", re.MULTILINE | re.IGNORECASE),
 }
 
 # Combined pattern for stripping all directives (matches the whole line including newline)
 ALL_DIRECTIVES_PATTERN = re.compile(
-    r"^\s*@(?:family|order|seealso|nodoc):.*$\n?", re.MULTILINE | re.IGNORECASE
+    r"^\s*%(?:family|order|seealso|nodoc)(?:\s+.*)?$\n?", re.MULTILINE | re.IGNORECASE
 )
 
 
@@ -65,9 +65,9 @@ def extract_directives(docstring: str | None) -> DocDirectives:
     >>> doc = '''
     ... Short description.
     ...
-    ... @family: Family Name
-    ... @order: 1
-    ... @seealso: func_a, func_b
+    ... %family Family Name
+    ... %order 1
+    ... %seealso func_a, func_b
     ...
     ... Parameters
     ... ----------
@@ -86,20 +86,20 @@ def extract_directives(docstring: str | None) -> DocDirectives:
     if not docstring:
         return directives
 
-    # Extract @family
+    # Extract %family
     if match := DIRECTIVE_PATTERNS["family"].search(docstring):
         directives.family = match.group(1).strip()
 
-    # Extract @order
+    # Extract %order
     if match := DIRECTIVE_PATTERNS["order"].search(docstring):
         directives.order = int(match.group(1))
 
-    # Extract @seealso (comma-separated list)
+    # Extract %seealso (comma-separated list)
     if match := DIRECTIVE_PATTERNS["seealso"].search(docstring):
         items = [item.strip() for item in match.group(1).split(",")]
         directives.seealso = [item for item in items if item]
 
-    # Extract @nodoc
+    # Extract %nodoc
     if DIRECTIVE_PATTERNS["nodoc"].search(docstring):
         directives.nodoc = True
 
@@ -122,15 +122,15 @@ def strip_directives(docstring: str | None) -> str:
     Returns
     -------
     str
-        The docstring with all @directive: lines removed.
+        The docstring with all %directive lines removed.
 
     Examples
     --------
     >>> doc = '''
     ... Short description.
     ...
-    ... @family: Family Name
-    ... @order: 1
+    ... %family Family Name
+    ... %order 1
     ...
     ... Parameters
     ... ----------
@@ -168,7 +168,7 @@ def has_directives(docstring: str | None) -> bool:
     Returns
     -------
     bool
-        True if any @directive: pattern is found.
+        True if any %directive pattern is found.
     """
     if not docstring:
         return False

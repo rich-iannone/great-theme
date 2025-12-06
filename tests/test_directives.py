@@ -10,11 +10,11 @@ class TestExtractDirectives:
     """Tests for extract_directives function."""
 
     def test_extract_family(self):
-        """Test extracting @family directive."""
+        """Test extracting %family directive."""
         docstring = """
         Short description.
 
-        @family: Family Name
+        %family Family Name
 
         Parameters
         ----------
@@ -24,11 +24,11 @@ class TestExtractDirectives:
         assert directives.family == "Family Name"
 
     def test_extract_order(self):
-        """Test extracting @order directive."""
+        """Test extracting %order directive."""
         docstring = """
         Short description.
 
-        @order: 42
+        %order 42
 
         Parameters
         ----------
@@ -38,11 +38,11 @@ class TestExtractDirectives:
         assert directives.order == 42
 
     def test_extract_seealso(self):
-        """Test extracting @seealso directive."""
+        """Test extracting %seealso directive."""
         docstring = """
         Short description.
 
-        @seealso: func_a, func_b, ClassC
+        %seealso func_a, func_b, ClassC
 
         Parameters
         ----------
@@ -52,21 +52,21 @@ class TestExtractDirectives:
         assert directives.seealso == ["func_a", "func_b", "ClassC"]
 
     def test_extract_nodoc(self):
-        """Test extracting @nodoc directive."""
+        """Test extracting %nodoc directive."""
         docstring = """
         Short description.
 
-        @nodoc: true
+        %nodoc true
         """
         directives = extract_directives(docstring)
         assert directives.nodoc is True
 
     def test_extract_nodoc_without_value(self):
-        """Test extracting @nodoc directive without explicit value."""
+        """Test extracting %nodoc directive without explicit value."""
         docstring = """
         Short description.
 
-        @nodoc:
+        %nodoc
         """
         directives = extract_directives(docstring)
         assert directives.nodoc is True
@@ -76,9 +76,9 @@ class TestExtractDirectives:
         docstring = """
         Validate column values are greater than a threshold.
 
-        @family: Family Name
-        @order: 1
-        @seealso: func_1, func_2
+        %family Family Name
+        %order 1
+        %seealso func_1, func_2
 
         Parameters
         ----------
@@ -128,8 +128,8 @@ class TestExtractDirectives:
         docstring = """
         Short description.
 
-            @family: Family Name
-            @order: 5
+            %family Family Name
+            %order 5
         """
         directives = extract_directives(docstring)
         assert directives.family == "Family Name"
@@ -138,7 +138,7 @@ class TestExtractDirectives:
     def test_family_with_special_characters(self):
         """Test family names with special characters."""
         docstring = """
-        @family: Data Processing & Transformation
+        %family Data Processing & Transformation
         """
         directives = extract_directives(docstring)
         assert directives.family == "Data Processing & Transformation"
@@ -148,16 +148,16 @@ class TestStripDirectives:
     """Tests for strip_directives function."""
 
     def test_strip_family(self):
-        """Test stripping @family directive."""
+        """Test stripping %family directive."""
         docstring = """Short description.
 
-@family: Family Name
+%family Family Name
 
 Parameters
 ----------
 x : int"""
         result = strip_directives(docstring)
-        assert "@family" not in result
+        assert "%family" not in result
         assert "Family Name" not in result
         assert "Short description." in result
         assert "Parameters" in result
@@ -166,17 +166,17 @@ x : int"""
         """Test stripping multiple directives."""
         docstring = """Short description.
 
-@family: Family Name
-@order: 1
-@seealso: func_a, func_b
+%family Family Name
+%order 1
+%seealso func_a, func_b
 
 Parameters
 ----------
 x : int"""
         result = strip_directives(docstring)
-        assert "@family" not in result
-        assert "@order" not in result
-        assert "@seealso" not in result
+        assert "%family" not in result
+        assert "%order" not in result
+        assert "%seealso" not in result
         assert "Short description." in result
         assert "Parameters" in result
 
@@ -187,7 +187,7 @@ x : int"""
 This is a longer explanation of what the function does.
 It spans multiple lines.
 
-@family: Family Name
+%family Family Name
 
 Parameters
 ----------
@@ -203,13 +203,13 @@ str
         assert "longer explanation" in result
         assert "Parameters" in result
         assert "Returns" in result
-        assert "@family" not in result
+        assert "%family" not in result
 
     def test_strip_cleans_blank_lines(self):
         """Test that stripping removes extra blank lines."""
         docstring = """Short description.
 
-@family: Test
+%family Test
 
 Parameters
 ----------"""
@@ -231,34 +231,34 @@ Parameters
         """Test that indented directives are stripped."""
         docstring = """Short description.
 
-    @family: Family Name
-    @order: 5
+    %family Family Name
+    %order 5
 
 Parameters
 ----------"""
         result = strip_directives(docstring)
-        assert "@family" not in result
-        assert "@order" not in result
+        assert "%family" not in result
+        assert "%order" not in result
 
 
 class TestHasDirectives:
     """Tests for has_directives function."""
 
     def test_has_family(self):
-        """Test detecting @family directive."""
-        assert has_directives("@family: Test")
+        """Test detecting %family directive."""
+        assert has_directives("%family Test")
 
     def test_has_order(self):
-        """Test detecting @order directive."""
-        assert has_directives("@order: 1")
+        """Test detecting %order directive."""
+        assert has_directives("%order 1")
 
     def test_has_seealso(self):
-        """Test detecting @seealso directive."""
-        assert has_directives("@seealso: func_a")
+        """Test detecting %seealso directive."""
+        assert has_directives("%seealso func_a")
 
     def test_has_nodoc(self):
-        """Test detecting @nodoc directive."""
-        assert has_directives("@nodoc: true")
+        """Test detecting %nodoc directive."""
+        assert has_directives("%nodoc true")
 
     def test_no_directives(self):
         """Test docstring without directives."""
@@ -312,9 +312,9 @@ class TestIntegration:
 
         This validation step checks values against a threshold.
 
-        @family: Family Name
-        @order: 1
-        @seealso: func_1, func_2
+        %family Family Name
+        %order 1
+        %seealso func_1, func_2
 
         Parameters
         ----------
@@ -337,9 +337,9 @@ class TestIntegration:
 
         # Strip directives
         cleaned = strip_directives(original)
-        assert "@family" not in cleaned
-        assert "@order" not in cleaned
-        assert "@seealso" not in cleaned
+        assert "%family" not in cleaned
+        assert "%order" not in cleaned
+        assert "%seealso" not in cleaned
         assert "Validate column values" in cleaned
         assert "Parameters" in cleaned
         assert "Returns" in cleaned

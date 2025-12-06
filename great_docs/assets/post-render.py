@@ -150,6 +150,35 @@ def format_signature_multiline(html_content):
     return signature_pattern.sub(reformat_signature, html_content)
 
 
+def strip_directives_from_html(html_content):
+    """
+    Remove Great Docs @directive: lines from rendered HTML.
+
+    Directives like @family:, @order:, @seealso:, and @nodoc: are used for
+    organizing documentation but should not appear in the final rendered output.
+    This function removes them as a safety net after quartodoc rendering.
+    """
+    # Pattern matches directive lines that may appear in HTML
+    # They could be plain text, inside <p> tags, or other HTML elements
+    # Match: optional whitespace, @directive:, value, end of line
+    directive_pattern = re.compile(
+        r"^\s*@(?:family|order|seealso|nodoc):\s*.*$\n?",
+        re.MULTILINE | re.IGNORECASE,
+    )
+
+    # Also match directives that got wrapped in <p> tags
+    # e.g., <p>@family: Something</p>
+    p_directive_pattern = re.compile(
+        r"<p>\s*@(?:family|order|seealso|nodoc):\s*[^<]*</p>\s*\n?",
+        re.IGNORECASE,
+    )
+
+    cleaned = directive_pattern.sub("", html_content)
+    cleaned = p_directive_pattern.sub("", cleaned)
+
+    return cleaned
+
+
 # Process all HTML files in the `_site/reference/` directory (except `index.html`)
 # and apply the specified transformations
 html_files = [f for f in glob.glob("_site/reference/*.html") if not f.endswith("index.html")]
@@ -164,6 +193,9 @@ for html_file in html_files:
 
     with open(html_file, "r") as file:
         content = file.read()
+
+    # Strip @directive: lines from rendered HTML (safety net for docstring directives)
+    content = strip_directives_from_html(content)
 
     # Format signatures with multiple arguments onto separate lines
     content = format_signature_multiline(content)

@@ -1,4 +1,4 @@
-from great_docs.directives import (
+from great_docs._directives import (
     DocDirectives,
     extract_directives,
     has_directives,

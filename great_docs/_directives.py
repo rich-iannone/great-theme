@@ -1,30 +1,3 @@
-"""
-Docstring directive extraction and stripping for Great Docs.
-
-This module provides functionality to extract Great Docs directives from
-docstrings (like @family:, @order:, @seealso:, @nodoc:) and strip them
-for clean rendering in documentation.
-
-Directives use a simple single-line format with an @ prefix:
-
-    @directive: value
-
-Example docstring with directives:
-
-    def my_function():
-        '''
-        Short description.
-
-        @family: Family Name
-        @order: 1
-        @seealso: other_func, AnotherClass
-
-        Parameters
-        ----------
-        ...
-        '''
-"""
-
 from __future__ import annotations
 
 import re

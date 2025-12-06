@@ -1353,7 +1353,7 @@ class GreatDocs:
             Keys are either simple names (e.g., "MyClass") or qualified names
             (e.g., "MyClass.my_method").
         """
-        from .directives import extract_directives
+        from ._directives import extract_directives
 
         try:
             import griffe
@@ -1470,7 +1470,7 @@ class GreatDocs:
             List of section dictionaries organized by family, or None if
             no exports found.
         """
-        from .directives import DocDirectives
+        from ._directives import DocDirectives
 
         exports = self._get_package_exports(package_name)
         if not exports:
